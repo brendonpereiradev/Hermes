@@ -1,7 +1,7 @@
 <h1 align="center">PrinterInstall</h1>
 
 <p align="center">
-  Windows desktop application for automated installation and standardization of network printers and thermal label printers across workstations.
+  Windows desktop application that installs and standardizes network printers and thermal label printers on workstations.
 </p>
 
 <p align="center">
@@ -9,20 +9,18 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/login.png" alt="Authentication Window" width="34%" />
+  <img src="docs/screenshots/login.png" alt="Authentication window" width="34%" />
   &nbsp;
-  <img src="docs/screenshots/main.png" alt="Main Deployment Window" width="60%" />
+  <img src="docs/screenshots/main.png" alt="Main deployment window" width="60%" />
 </p>
 
 ---
 
 ## About the project
 
-**PrinterInstall** is a desktop application built with .NET 8 and WPF to automate network printer configuration in corporate and hospital environments. The system creates TCP/IP ports, installs print drivers, and configures queues on multiple computers remotely, removing the need for manual station by station setup.
+PrinterInstall is a .NET 8 and WPF application that automates network printer setup in corporate and hospital environments. It creates TCP/IP ports, installs drivers and configures queues on many computers remotely, without setting up each machine by hand.
 
-The application includes driver packages for various manufacturers, authenticates against Active Directory via LDAP, configures Gainscha thermal labels through structured data streams, and automatically reverts changes if an installation fails on any machine.
-
-The windows use WPF-UI Fluent components, with an integrated title bar and a switch between light and dark themes. Windows 11 uses the Mica backdrop; Windows 10 uses a solid background. The main window's command bar brings together deployment, printer control, and direct testing. The event panel can be collapsed while keeping the latest log message visible.
+The solution has two layers: `PrinterInstall.Core` (driver catalog, LDAP authentication, orchestration and remote WMI/CIM operations) and `PrinterInstall.App` (MVVM interface built with WPF-UI). Every resource it creates is recorded in a rollback journal, and the orchestrator undoes completed steps if an installation fails or is cancelled.
 
 ---
 
@@ -30,166 +28,75 @@ The windows use WPF-UI Fluent components, with an integrated title bar and a swi
 
 | Feature | Description |
 |---|---|
-| **Batch deployment** | Installs queues on multiple computers simultaneously with live status tracking |
-| **Computer list** | Shows the number of listed computers and flags invalid names before deployment |
-| **Automatic rollback** | Reverts created ports and queues when an error occurs on a target workstation |
-| **Control wizard** | Lists, renames, and removes queues on remote machines or the local computer |
-| **Direct network test** | Validates connectivity and sends test pages or labels directly to raw port 9100 before deployment |
-| **Gainscha presets** | Configures four predefined label sizes: Patient, Matrix, Wristband, and Batch |
-| **Domain authentication** | Validates credentials against Active Directory via LDAP using UPN or NetBIOS formats |
-| **Customizable settings** | Allows modifying the default domain and LDAP server through the settings view |
-| **Privilege elevation** | Runs remote administrative actions via scheduled tasks when required |
-| **Report export** | Generates structured text log files with results from every operation |
-| **Collapsible event panel** | Shows the latest message when collapsed and the full history when expanded; provides report export and access to the log folder |
+| Batch deployment | Installs queues on several computers at once, with live status. |
+| Automatic rollback | Removes created ports and queues when installation fails on a workstation. |
+| Control wizard | Lists, renames and removes queues on remote computers or the local machine. |
+| Direct test | Prints test pages or labels straight to raw port 9100 before installing. |
+| Gainscha labels | Configures the Patient (89 × 36 mm), Matrix (50 × 30 mm), Wristband (25 × 270 mm) and Batch (45 × 13 mm) sizes. |
+| Domain authentication | Validates credentials against Active Directory via LDAP, in UPN or NetBIOS format. |
+| Reports | Exports a log with the result of each operation. |
 
 ---
 
 ## Stack
 
-The project relies on native Windows platform technologies for print spooler and network management:
-
-- **.NET 8 (`net8.0-windows`)**: Primary runtime platform
-- **WPF with WPF-UI**: Graphical interface styled with Windows 11 Fluent Design
-- **CommunityToolkit.Mvvm**: MVVM architecture with commands and observable properties
-- **Microsoft.Extensions.Hosting**: Dependency injection and application lifecycle management
-- **System.Management**: WMI/CIM queries and calls for managing spooler ports, drivers, and queues
-- **System.DirectoryServices.Protocols**: Direct LDAP communication with Active Directory
-- **Seagull SSDAL and SDS**: Configuration protocol and media calibration for Gainscha thermal printers
-- **xUnit and Moq**: Automated test suite for domain and presentation layers
+- **.NET 8 and WPF with WPF-UI**: Windows application with a Fluent interface.
+- **CommunityToolkit.Mvvm and Microsoft.Extensions.Hosting**: MVVM and dependency injection.
+- **System.Management**: WMI/CIM calls for spooler ports, drivers and queues.
+- **System.DirectoryServices.Protocols**: LDAP authentication against Active Directory.
+- **Seagull SSDAL and SDS**: media calibration for Gainscha thermal printers.
+- **xUnit and Moq**: automated tests.
 
 ---
 
-## Project structure
-
-```
-PrinterInstall/
-├── docs/
-│   └── screenshots/                    # Application screenshots
-├── drivers/
-│   ├── Brother/                        # Driver packages for Brother printers
-│   ├── Epson/                          # EPSON Universal Print Driver packages
-│   ├── Gainscha/                       # Drivers and utilities for Gainscha thermal printers
-│   └── Lexmark/                        # Lexmark Universal v4 and v2 drivers
-├── publish/                            # Output directory for compiled self-contained binaries
-├── scripts/
-│   ├── Capture-GainschaLabelPreset.ps1 # Captures SDS label calibration profiles
-│   ├── Publish-PrinterInstall.ps1      # Builds and publishes the standalone executable
-│   └── Test-GainschaAddType.ps1        # Tests C# type importing in PowerShell
-├── src/
-│   ├── PrinterInstall.App/             # WPF graphical user interface
-│   │   ├── Assets/                     # Icons, images, and visual assets
-│   │   ├── Converters/                 # XAML value converters
-│   │   ├── Localization/               # UI localization and strings
-│   │   ├── Services/                   # UI, dialog, session, and log export services
-│   │   ├── ViewModels/                 # MVVM presentation logic
-│   │   ├── Views/                      # Windows and views
-│   │   ├── App.xaml                    # Application styles and global resources
-│   │   ├── App.xaml.cs                 # Application entry point and DI container setup
-│   │   └── appsettings.json            # Default domain and LDAP server configuration
-│   └── PrinterInstall.Core/            # Domain and business logic layer
-│       ├── Auth/                       # LDAP authentication and credential handling
-│       ├── Catalog/                    # Model and driver catalog mapping
-│       ├── Drivers/                    # Package extraction and pnputil driver installation
-│       ├── Gainscha/                   # SSDAL, SDS communication, and media calibration
-│       ├── Logging/                    # Structured logging and event tracking
-│       ├── Models/                     # Domain models, records, and state enums
-│       ├── Network/                    # Raw port 9100 communication and test commands
-│       ├── Orchestration/              # Deployment orchestrator and rollback journal
-│       ├── Remote/                     # Remote CIM/WMI operations and privilege elevation
-│       └── Validation/                 # Input and network parameter validation
-├── tests/
-│   ├── PrinterInstall.App.Tests/       # Unit tests for ViewModels and UI services
-│   └── PrinterInstall.Core.Tests/      # Unit tests for domain logic, catalog, and orchestration
-├── GEMINI.md                           # Development guidelines and technical references
-├── LICENSE                             # MIT license terms
-├── MANUAL.txt                          # User manual with operational instructions (Portuguese)
-├── MODELOS_TESTADOS.txt                # List of validated printers and models
-├── PrinterInstall.sln                  # .NET solution file
-└── README.md                           # Main repository documentation (Portuguese)
-```
-
----
-
-## Architecture
-
-The solution is divided into two primary layers, each accompanied by dedicated test projects:
-
-1. **PrinterInstall.Core**: UI-independent class library containing the hardware catalog, input validation, LDAP authentication, deployment orchestration, raw socket communication, and remote WMI/CIM operations.
-2. **PrinterInstall.App**: WPF client application implementing MVVM with WPF-UI. It handles screen navigation, operator input, real-time feedback, and report generation.
-
-Operations modifying system state record their actions in the rollback journal (`DeploymentRollbackJournal`). On cancellation or failure, the orchestrator reverts completed steps, removing partial ports or queues. Local and remote calls pass through `RoutingRemotePrinterOperations`, which selects the appropriate execution strategy for each target machine.
-
----
-
-## Gainscha label presets
-
-| Preset | Dimensions | Hospital usage |
-|---|:---:|---|
-| **Patient** | 89 × 36 mm | Identification sheets, patient charts, and bed tags |
-| **Matrix** | 50 × 30 mm | Blood collection tubes and lab specimen vials |
-| **Wristband** | 25 × 270 mm | Patient identification wristbands |
-| **Batch** | 45 × 13 mm | Medication labeling and supply inventory |
-
-Verify which roll is loaded in the physical printer before configuring a Gainscha queue. Selecting a preset larger than the loaded media will cause text to print outside the label boundaries.
-
----
-
-## Build and run
+## Getting started
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- Windows 10, Windows 11, or Windows Server
-- Administrative credentials for remote workstation management
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+- Windows 10, Windows 11 or Windows Server.
+- Credentials with administrative rights on the target computers.
 
-### Step by step
+### Steps
 
-1. **Clone the repository:**
+1. Clone the repository and build the solution:
+
    ```powershell
-   git clone https://github.com/brendonpereiradev/PrinterInstall
+   git clone https://github.com/brendonpereiradev/PrinterInstall.git
    cd PrinterInstall
-   ```
-
-2. **Build the solution:**
-   ```powershell
    dotnet build PrinterInstall.sln
    ```
 
-3. **Run the application:**
+2. Start the application:
+
    ```powershell
    dotnet run --project src/PrinterInstall.App
    ```
+
+3. On first run, set the domain and LDAP server from the settings icon and sign in as `user@domain` or `DOMAIN\user`.
 
 ### Available commands
 
 | Command | Description |
 |---|---|
-| `dotnet build PrinterInstall.sln` | Builds all projects in the solution |
-| `dotnet run --project src/PrinterInstall.App` | Starts the WPF application in development mode |
-| `dotnet test PrinterInstall.sln` | Runs the automated test suite |
-| `pwsh scripts/Publish-PrinterInstall.ps1` | Generates a standalone self-contained executable in `publish/PrinterInstall` |
-
----
-
-## Workflow
-
-1. **Authentication:** Enter network credentials in `user@domain` or `DOMAIN\user` format. If you need to change the default domain or LDAP server, click the settings icon in the header. Credentials are only kept in memory during the active session.
-2. **Target selection:** Add destination workstations by hostname or IP address. The "Add This PC" button includes the current machine. Pasting a list adds multiple targets at once.
-3. **Queue configuration:** Select the manufacturer, enter the printer IP address, and define the queue name. For Gainscha thermal printers, select the matching label preset.
-4. **Deployment:** Start the installation from the command bar and follow progress per machine. The cancel button appears during deployment. Expand the event panel to read the history and, when finished, export the summary report to a text file.
+| `dotnet build PrinterInstall.sln` | Builds the solution. |
+| `dotnet run --project src/PrinterInstall.App` | Starts the application. |
+| `dotnet test PrinterInstall.sln` | Runs the tests. |
+| `pwsh scripts/Publish-PrinterInstall.ps1` | Builds the single-file executable in `publish/PrinterInstall`. |
+| `python scripts/Test-PublicData.py` | Checks that the repository holds no real environment data. |
+| `pwsh scripts/Test-Secrets.ps1` | Scans for secrets before pushing changes. |
 
 ---
 
 ## Documentation
 
-- [Operational manual](MANUAL.txt): Operational guide with support procedures and troubleshooting (Portuguese)
-- [Tested models](MODELOS_TESTADOS.txt): Validated equipment and drivers by manufacturer
+- [User manual](MANUAL.txt) (Portuguese): support procedures, screens and troubleshooting.
+- [Tested models](MODELOS_TESTADOS.txt) (Portuguese): devices and drivers validated per manufacturer.
 
 ---
 
-## License and terms
+## License
 
-Distributed under the **MIT** license. See [`LICENSE`](LICENSE) for details.
+Distributed under the MIT license. See [LICENSE](LICENSE).
 
-> **Note:** Included third-party printer drivers and utilities belong to their respective manufacturers and are subject to their own license terms.
-
+Bundled third-party drivers and utilities belong to their manufacturers and follow their own license terms.
