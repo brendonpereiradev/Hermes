@@ -3,7 +3,7 @@
                  Guia Pratico de Operacao e Suporte
 ================================================================================
 
-Versao da Aplicacao: 1.5.0
+Versao da Aplicacao: 1.5.1
 Publico: Tecnicos de suporte, helpdesk e analistas de campo
 Objetivo: Instalar, gerenciar e diagnosticar impressoras de rede e etiquetadoras
           em computadores locais e remotos.
