@@ -3,6 +3,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using Moq;
 using PrinterInstall.Core.Remote;
+using PrinterInstall.Core.Tests.TestSupport;
 
 namespace PrinterInstall.Core.Tests.Remote;
 
@@ -12,10 +13,10 @@ public class RemotePrinterQueryFallbackTests
     private static readonly NetworkCredential Credential = new("admin", "test-password", "DOMAIN");
     private readonly Mock<IRemoteDriverFileStager> _stager = new();
     private readonly Mock<IRemoteWmiProcessRunner> _wmi = new();
-    private readonly Mock<ISchtasksFallbackRunner> _rpc = new();
+    private readonly RecordingRemoteTaskScheduler _rpc = new();
     private readonly RemoteHostSessionFactory _sessions;
     private readonly CimRemotePrinterOperations _sut;
-    private readonly List<string> _commands = new();
+    private List<string> _commands => _rpc.Calls;
     private readonly List<string> _events = new();
     private string _json = "[]";
     private string? _script;
@@ -25,9 +26,6 @@ public class RemotePrinterQueryFallbackTests
         _sessions = new RemoteHostSessionFactory(_wmi.Object);
         _wmi.Setup(x => x.RunAsync(Host, Credential, It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new COMException("Access is denied.", unchecked((int)0x80070005)));
-        _rpc.Setup(x => x.RunAsync(It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-            .Callback<string, TimeSpan, CancellationToken>((args, _, _) => _commands.Add(args))
-            .ReturnsAsync(new LocalProcessOutput(new RemoteProcessResult(0, 123, false), "", ""));
         _stager.Setup(x => x.WriteTextFileAsync(Host, Credential, It.IsAny<RemoteDriverStagingPaths>(), "task.ps1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Callback<string, NetworkCredential, RemoteDriverStagingPaths, string, string, CancellationToken>((_, _, _, _, script, _) => _script = script)
             .Returns(Task.CompletedTask);
@@ -40,7 +38,7 @@ public class RemotePrinterQueryFallbackTests
             .Callback(() => _events.Add("cleanup"))
             .Returns(Task.CompletedTask);
         _sut = new CimRemotePrinterOperations(_stager.Object, _sessions, _wmi.Object,
-            new ElevatedRemoteProcessRunner(_wmi.Object, _stager.Object, _rpc.Object));
+            new ElevatedRemoteProcessRunner(_wmi.Object, _stager.Object, _rpc));
     }
 
     [Fact]
@@ -54,12 +52,12 @@ public class RemotePrinterQueryFallbackTests
         Assert.True(_sessions.RequiresElevatedExecution(Host));
         Assert.Equal(new[] { "read", "cleanup" }, _events);
         Assert.Equal(3, _commands.Count);
-        Assert.Contains("/Create /S \"new-notebook\"", _commands[0]);
-        Assert.Contains("/U \"DOMAIN\\admin\"", _commands[0]);
-        Assert.Contains("/RU SYSTEM", _commands[0]);
-        Assert.DoesNotContain("/RP", _commands[0]);
-        Assert.Contains("/Run", _commands[1]);
-        Assert.Contains("/Delete", _commands[2]);
+        Assert.StartsWith("Create new-notebook PrinterInstall_", _commands[0]);
+        Assert.StartsWith("Run new-notebook", _commands[1]);
+        Assert.StartsWith("Delete new-notebook", _commands[2]);
+        Assert.All(_rpc.Credentials, c => Assert.Same(Credential, c));
+        Assert.Equal("powershell.exe", _rpc.Executable);
+        Assert.DoesNotContain(Credential.Password, _rpc.Arguments);
         Assert.Contains("ConvertTo-Json -InputObject $queryResult", _script);
         Assert.DoesNotContain(Credential.Password, _script);
 

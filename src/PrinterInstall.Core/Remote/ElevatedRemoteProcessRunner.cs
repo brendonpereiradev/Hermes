@@ -7,19 +7,20 @@ public sealed class ElevatedRemoteProcessRunner
 {
     private static readonly TimeSpan SchtasksBootstrapTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
+    private const string TaskExecutable = "powershell.exe";
 
     private readonly IRemoteWmiProcessRunner _wmiRunner;
     private readonly IRemoteDriverFileStager _stager;
-    private readonly ISchtasksFallbackRunner _schtasksFallbackRunner;
+    private readonly IRemoteTaskScheduler _rpcScheduler;
 
     public ElevatedRemoteProcessRunner(
         IRemoteWmiProcessRunner wmiRunner,
         IRemoteDriverFileStager stager,
-        ISchtasksFallbackRunner? schtasksFallbackRunner = null)
+        IRemoteTaskScheduler? rpcScheduler = null)
     {
         _wmiRunner = wmiRunner;
         _stager = stager;
-        _schtasksFallbackRunner = schtasksFallbackRunner ?? new DefaultSchtasksFallbackRunner();
+        _rpcScheduler = rpcScheduler ?? new RpcRemoteTaskScheduler();
     }
 
     public async Task RunElevatedScriptAsync(
@@ -36,25 +37,6 @@ public sealed class ElevatedRemoteProcessRunner
             scriptContent,
             timeout,
             log,
-            runAsSystem: true,
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task RunElevatedScriptAsUserAsync(
-        string host,
-        NetworkCredential credential,
-        string scriptContent,
-        TimeSpan timeout,
-        IProgress<string>? log,
-        CancellationToken cancellationToken)
-    {
-        await RunScheduledScriptAsync(
-            host,
-            credential,
-            scriptContent,
-            timeout,
-            log,
-            runAsSystem: false,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -65,7 +47,7 @@ public sealed class ElevatedRemoteProcessRunner
         var script = RemoteElevatedScriptBuilder.WrapWithResultHandling(queryBody + "\n" +
             "ConvertTo-Json -InputObject $queryResult -Depth 4 -Compress | Set-Content -LiteralPath (Join-Path $PSScriptRoot 'query.json') -Encoding UTF8");
         return await RunScheduledScriptAsync(host, credential, script, timeout, null,
-            runAsSystem: true, cancellationToken, outputFileName: "query.json").ConfigureAwait(false)
+            cancellationToken, outputFileName: "query.json").ConfigureAwait(false)
             ?? throw new InvalidOperationException("Consulta remota não retornou dados.");
     }
 
@@ -75,7 +57,6 @@ public sealed class ElevatedRemoteProcessRunner
         string scriptContent,
         TimeSpan timeout,
         IProgress<string>? log,
-        bool runAsSystem,
         CancellationToken cancellationToken,
         string? outputFileName = null)
     {
@@ -86,6 +67,7 @@ public sealed class ElevatedRemoteProcessRunner
         var resultLocal = paths.LocalLogPath("task.result");
         var scriptWithResultFile = AugmentScriptWithResultFile(scriptContent, resultLocal);
         var transcriptWrapper = WrapScriptWithTranscript(scriptWithResultFile, logLocal);
+        var taskArguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptLocal}\"";
 
         var usedFallback = false;
         var creationAttempted = false;
@@ -94,26 +76,18 @@ public sealed class ElevatedRemoteProcessRunner
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            log?.Report(runAsSystem
-                ? "Executando via tarefa agendada elevada (será removida ao concluir)..."
-                : "Executando via tarefa agendada como usuário de deploy (será removida ao concluir)...");
+            log?.Report("Executando via tarefa agendada elevada (será removida ao concluir)...");
 
             await _stager.WriteTextFileAsync(host, credential, paths, "task.ps1", transcriptWrapper, cancellationToken)
                 .ConfigureAwait(false);
 
-            var createCmd = runAsSystem
-                ? string.Format(
-                    CultureInfo.InvariantCulture,
-                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST 00:00 /RU SYSTEM /RL HIGHEST /F",
-                    taskName,
-                    scriptLocal)
-                : string.Format(
-                    CultureInfo.InvariantCulture,
-                    "schtasks /Create /TN \"{0}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{1}\\\"\" /SC ONCE /ST 00:00 /RU \"{2}\" /RP \"{3}\" /RL HIGHEST /F",
-                    taskName,
-                    scriptLocal,
-                    SchtasksRunAsFormatter.EscapeCmdArgument(SchtasksRunAsFormatter.FormatRunAsUser(credential)),
-                    SchtasksRunAsFormatter.EscapeCmdArgument(credential.Password ?? string.Empty));
+            // A tarefa roda como SYSTEM, então a linha de comando não carrega nenhuma senha.
+            var createCmd = string.Format(
+                CultureInfo.InvariantCulture,
+                "schtasks /Create /TN \"{0}\" /TR \"{1} {2}\" /SC ONCE /ST 00:00 /RU SYSTEM /RL HIGHEST /F",
+                taskName,
+                TaskExecutable,
+                taskArguments.Replace("\"", "\\\"", StringComparison.Ordinal));
 
             RemoteProcessResult createResult;
             try
@@ -133,78 +107,38 @@ public sealed class ElevatedRemoteProcessRunner
 
             if (createResult.ReturnValue != 0)
             {
-                log?.Report($"WMI Win32_Process retornou {createResult.ReturnValue} ao tentar iniciar schtasks em {host}. Tentando via RPC remoto (schtasks /S)...");
-
-                var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
-                var remotePass = credential.Password ?? string.Empty;
-
-                var fallbackCreateArgs = runAsSystem
-                    ? string.Format(
-                        CultureInfo.InvariantCulture,
-                        "/Create /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{4}\\\"\" /SC ONCE /ST 00:00 /RU SYSTEM /RL HIGHEST /F",
-                        host,
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
-                        taskName,
-                        scriptLocal)
-                    : string.Format(
-                        CultureInfo.InvariantCulture,
-                        "/Create /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /TR \"powershell.exe -NoProfile -ExecutionPolicy Bypass -File \\\"{4}\\\"\" /SC ONCE /ST 00:00 /RU \"{5}\" /RP \"{6}\" /RL HIGHEST /F",
-                        host,
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
-                        taskName,
-                        scriptLocal,
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass));
-
-                var fallbackResult = await _schtasksFallbackRunner.RunAsync(fallbackCreateArgs, SchtasksBootstrapTimeout, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (fallbackResult.Result.ReturnValue != 0)
+                log?.Report($"WMI Win32_Process retornou {createResult.ReturnValue} ao tentar iniciar schtasks em {host}. Tentando via Agendador de Tarefas remoto (RPC)...");
+                try
                 {
-                    var detail = !string.IsNullOrWhiteSpace(fallbackResult.StandardError)
-                        ? fallbackResult.StandardError.Trim()
-                        : (!string.IsNullOrWhiteSpace(fallbackResult.StandardOutput)
-                            ? fallbackResult.StandardOutput.Trim()
-                            : $"código {fallbackResult.Result.ReturnValue}");
-
-                    throw new InvalidOperationException(runAsSystem
-                        ? $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}; RPC fallback: {detail}). Verifique permissões para criar tarefas agendadas como SYSTEM ou restrições de criação de processo WMI."
-                        : $"schtasks /Create falhou em {host} (WMI return {createResult.ReturnValue}; RPC fallback: {detail}). Verifique permissões para criar tarefa agendada como o usuário de deploy ou restrições de processo WMI.");
+                    await _rpcScheduler.CreateSystemTaskAsync(host, credential, taskName, TaskExecutable, taskArguments,
+                        SchtasksBootstrapTimeout, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    throw new InvalidOperationException(
+                        $"Criação da tarefa agendada falhou em {host} (WMI return {createResult.ReturnValue}; RPC fallback: {ex.Message}). Verifique permissões para criar tarefas agendadas como SYSTEM ou restrições de criação de processo WMI.",
+                        ex);
                 }
 
                 usedFallback = true;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+            launchAttempted = true;
             if (usedFallback)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
-                var remotePass = credential.Password ?? string.Empty;
-                var fallbackRunArgs = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "/Run /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\"",
-                    host,
-                    SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
-                    SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
-                    taskName);
-
-                launchAttempted = true;
-                var runResult = await _schtasksFallbackRunner.RunAsync(fallbackRunArgs, SchtasksBootstrapTimeout, cancellationToken)
-                    .ConfigureAwait(false);
-                if (runResult.Result.ReturnValue != 0)
+                try
                 {
-                    var detail = !string.IsNullOrWhiteSpace(runResult.StandardError)
-                        ? runResult.StandardError.Trim()
-                        : $"código {runResult.Result.ReturnValue}";
-                    throw new InvalidOperationException($"schtasks /Run falhou via RPC remoto em {host}: {detail}");
+                    await _rpcScheduler.RunTaskAsync(host, credential, taskName, SchtasksBootstrapTimeout, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    throw new InvalidOperationException($"Início da tarefa agendada falhou via RPC remoto em {host}: {ex.Message}", ex);
                 }
             }
             else
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                launchAttempted = true;
                 var runCmd = $"schtasks /Run /TN \"{taskName}\"";
                 await _wmiRunner.RunAsync(host, credential, runCmd, SchtasksBootstrapTimeout, cancellationToken)
                     .ConfigureAwait(false);
@@ -229,11 +163,8 @@ public sealed class ElevatedRemoteProcessRunner
                 {
                     if (usedFallback)
                     {
-                        var endArgs = $"/End /S \"{host}\" /U \"{SchtasksRunAsFormatter.EscapeCmdArgument(SchtasksRunAsFormatter.FormatRunAsUser(credential))}\" /P \"{SchtasksRunAsFormatter.EscapeCmdArgument(credential.Password ?? string.Empty)}\" /TN \"{taskName}\"";
-                        var endResult = await _schtasksFallbackRunner.RunAsync(endArgs, TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                        await _rpcScheduler.StopTaskAsync(host, credential, taskName, TimeSpan.FromSeconds(5), cleanupBudget.Token)
                             .WaitAsync(cleanupBudget.Token).ConfigureAwait(false);
-                        if (endResult.Result.ReturnValue != 0 || endResult.Result.TimedOut)
-                            throw new InvalidOperationException($"schtasks /End falhou: {endResult.StandardError}; código={endResult.Result.ReturnValue}; timeout={endResult.Result.TimedOut}");
                     }
                     else
                     {
@@ -273,16 +204,7 @@ public sealed class ElevatedRemoteProcessRunner
             {
                 try
                 {
-                    var remoteUser = SchtasksRunAsFormatter.FormatRunAsUser(credential);
-                    var remotePass = credential.Password ?? string.Empty;
-                    var fallbackDeleteArgs = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "/Delete /S \"{0}\" /U \"{1}\" /P \"{2}\" /TN \"{3}\" /F",
-                        host,
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remoteUser),
-                        SchtasksRunAsFormatter.EscapeCmdArgument(remotePass),
-                        taskName);
-                    await _schtasksFallbackRunner.RunAsync(fallbackDeleteArgs, TimeSpan.FromSeconds(5), cleanupBudget.Token)
+                    await _rpcScheduler.DeleteTaskAsync(host, credential, taskName, TimeSpan.FromSeconds(5), cleanupBudget.Token)
                         .WaitAsync(cleanupBudget.Token)
                         .ConfigureAwait(false);
                 }

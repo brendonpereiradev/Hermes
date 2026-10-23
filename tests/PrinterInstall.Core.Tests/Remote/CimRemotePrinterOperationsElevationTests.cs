@@ -120,7 +120,7 @@ public class CimRemotePrinterOperationsElevationTests
 
         var stager = new Mock<IRemoteDriverFileStager>();
         var wmiRunner = new Mock<IRemoteWmiProcessRunner>();
-        var fallbackRunner = new Mock<ISchtasksFallbackRunner>();
+        var fallbackScheduler = new PrinterInstall.Core.Tests.TestSupport.RecordingRemoteTaskScheduler();
 
         var paths = RemoteDriverStagingPaths.Create(Host);
         stager.Setup(x => x.StageAsync(Host, Credential, It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -141,12 +141,7 @@ public class CimRemotePrinterOperationsElevationTests
             .ReturnsAsync(new RemoteProcessResult(8, null, TimedOut: false));
 
         // O fallback RPC remoto funciona com sucesso
-        var fallbackArgs = new List<string>();
-        fallbackRunner.Setup(x => x.RunAsync(It.IsAny<string>(), It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-            .Callback<string, TimeSpan, CancellationToken>((a, _, _) => fallbackArgs.Add(a))
-            .ReturnsAsync(new LocalProcessOutput(new RemoteProcessResult(0, 123, TimedOut: false), "", ""));
-
-        var elevatedRunner = new ElevatedRemoteProcessRunner(wmiRunner.Object, stager.Object, fallbackRunner.Object);
+        var elevatedRunner = new ElevatedRemoteProcessRunner(wmiRunner.Object, stager.Object, fallbackScheduler);
         var sut = new CimRemotePrinterOperations(stager.Object, sessionFactory, wmiRunner.Object, elevatedRunner);
 
         var package = new LocalDriverPackage(PrinterBrand.Lexmark, "C:\\Fake\\Driver", "fake.inf", "Fake Driver Name");
@@ -154,8 +149,8 @@ public class CimRemotePrinterOperationsElevationTests
         await sut.InstallPrinterDriverAsync(Host, Credential, package, log: null, CancellationToken.None);
 
         Assert.True(session.RequiresElevatedExecution);
-        Assert.Contains(fallbackArgs, a => a.Contains("/Create /S \"remote-pc\"", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(fallbackArgs, a => a.Contains("/Run /S \"remote-pc\"", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(fallbackScheduler.Calls, a => a.StartsWith("Create remote-pc ", StringComparison.Ordinal));
+        Assert.Contains(fallbackScheduler.Calls, a => a.StartsWith("Run remote-pc ", StringComparison.Ordinal));
     }
 
     [Theory]

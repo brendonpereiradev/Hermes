@@ -12,7 +12,4 @@ internal static class SchtasksRunAsFormatter
 
         return CredentialHelper.BuildCredentialUserName(credential);
     }
-
-    public static string EscapeCmdArgument(string value) =>
-        value.Replace("\"", "\\\"", StringComparison.Ordinal);
 }
