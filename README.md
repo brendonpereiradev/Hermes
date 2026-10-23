@@ -90,9 +90,8 @@ A solução tem duas camadas: `PrinterInstall.Core` (catálogo de drivers, auten
 
 ## Documentação
 
-- [Manual do usuário (PDF)](docs/Manual-PrinterInstall.pdf): guia ilustrado de uso do aplicativo.
-- [Manual de instruções](MANUAL.txt): procedimentos de suporte, telas e solução de problemas.
-- [Modelos testados](MODELOS_TESTADOS.txt): equipamentos e drivers validados por fabricante.
+- [Documentação (PDF)](docs/Documenta%C3%A7%C3%A3o.pdf)
+- [Documentação (MD)](docs/Documenta%C3%A7%C3%A3o.md)
 
 ---
 

@@ -90,9 +90,8 @@ The solution has two layers: `PrinterInstall.Core` (driver catalog, LDAP authent
 
 ## Documentation
 
-- [User guide (PDF)](docs/Manual-PrinterInstall.pdf) (Portuguese): illustrated guide to using the application.
-- [User manual](MANUAL.txt) (Portuguese): support procedures, screens and troubleshooting.
-- [Tested models](MODELOS_TESTADOS.txt) (Portuguese): devices and drivers validated per manufacturer.
+- [Documentação (PDF)](docs/Documenta%C3%A7%C3%A3o.pdf) (Portuguese)
+- [Documentação (MD)](docs/Documenta%C3%A7%C3%A3o.md) (Portuguese)
 
 ---
 
