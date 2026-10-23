@@ -401,6 +401,9 @@ public sealed class PrinterDeploymentOrchestrator
                             continue;
                         }
 
+                        await ReportExistingQueueMismatchAsync(computer, request, def, displayName, drivers, cancellationToken, diagnosticLog)
+                            .ConfigureAwait(false);
+
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.SkippedAlreadyExists,
@@ -782,6 +785,65 @@ public sealed class PrinterDeploymentOrchestrator
         }
 
         rollbackJournal.AbandonQueue(computer, displayName, portName);
+    }
+
+    /// <summary>
+    /// Registra no log quando a fila existente usa driver ou porta diferentes do planejado.
+    /// Apenas diagnóstico: a fila não é alterada e falhas na consulta não interrompem o deploy.
+    /// </summary>
+    private async Task ReportExistingQueueMismatchAsync(
+        string computer,
+        PrinterDeploymentRequest request,
+        PrinterQueueDefinition def,
+        string displayName,
+        IReadOnlyList<string> drivers,
+        CancellationToken cancellationToken,
+        IProgress<string>? diagnosticLog)
+    {
+        if (diagnosticLog is null)
+            return;
+
+        RemotePrinterQueueInfo? existing;
+        try
+        {
+            var queues = await _remote.ListPrinterQueuesAsync(computer, request.DomainCredential, cancellationToken).ConfigureAwait(false);
+            existing = queues?.FirstOrDefault(q => string.Equals(q.Name, displayName, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            diagnosticLog.Report($"{computer} [{displayName}]: não foi possível ler driver/porta da fila existente ({Flatten(ex)}).");
+            return;
+        }
+
+        if (existing is null)
+            return;
+
+        var differences = new List<string>();
+
+        var driverOrder = PrinterCatalog.GetDriverResolutionOrder(def.Brand);
+        var existingDriver = existing.DriverName?.Trim() ?? "";
+        if (!DriverNameMatcher.IsAnyAcceptedDriverInstalled(new[] { existingDriver }, driverOrder))
+        {
+            var expectedDriver = DriverNameMatcher.ResolveInstalledDriverName(drivers, driverOrder) ?? driverOrder.FirstOrDefault() ?? "";
+            differences.Add($"driver '{DisplayOrUnknown(existingDriver)}' (planejado: '{expectedDriver}')");
+        }
+
+        var host = def.PrinterHostAddress?.Trim() ?? "";
+        if (!string.IsNullOrEmpty(host))
+        {
+            var expectedPort = PrinterPortNaming.BuildPortName(host, def.PortNumber);
+            var existingPort = existing.PortName?.Trim() ?? "";
+            if (!string.Equals(existingPort, expectedPort, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(existingPort, "IP_" + expectedPort, StringComparison.OrdinalIgnoreCase))
+            {
+                differences.Add($"porta '{DisplayOrUnknown(existingPort)}' (planejada: '{expectedPort}')");
+            }
+        }
+
+        if (differences.Count > 0)
+            diagnosticLog.Report($"{computer} [{displayName}]: a fila existente difere do planejado e não foi alterada: {string.Join("; ", differences)}.");
+
+        static string DisplayOrUnknown(string value) => string.IsNullOrEmpty(value) ? "desconhecido" : value;
     }
 
     private static string Flatten(Exception ex)

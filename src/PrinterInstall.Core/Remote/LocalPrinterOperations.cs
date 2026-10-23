@@ -223,7 +223,7 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
         return Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>
         {
             var scope = WmiPrinterOperationsCore.CreateLocalScope();
-            var query = new ObjectQuery("SELECT Name, PortName FROM Win32_Printer");
+            var query = new ObjectQuery("SELECT Name, PortName, DriverName FROM Win32_Printer");
             using var searcher = new ManagementObjectSearcher(scope, query);
             var list = new List<RemotePrinterQueueInfo>();
             foreach (ManagementObject mo in searcher.Get())
@@ -235,7 +235,8 @@ public sealed class LocalPrinterOperations : IRemotePrinterOperations
                     if (string.IsNullOrWhiteSpace(name))
                         continue;
                     var port = mo["PortName"]?.ToString();
-                    list.Add(new RemotePrinterQueueInfo(name, port));
+                    var driver = mo["DriverName"]?.ToString();
+                    list.Add(new RemotePrinterQueueInfo(name, port, driver));
                 }
             }
             return list;

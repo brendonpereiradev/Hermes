@@ -75,10 +75,12 @@ public class RemotePrinterQueryFallbackTests
         _sessions.RememberElevatedSession(Host);
         Assert.Empty(await _sut.GetInstalledDriverNamesAsync(Host, Credential));
         Assert.Contains("Get-CimInstance Win32_PrinterDriver", _script);
-        _json = "[{\"Name\":\"Recepção\",\"PortName\":\"IP_192.0.2.10\"}]";
+        _json = "[{\"Name\":\"Recepção\",\"PortName\":\"IP_192.0.2.10\",\"DriverName\":\"EPSON Universal Print Driver\"}]";
         var queues = await _sut.ListPrinterQueuesAsync(Host, Credential);
-        Assert.Equal("Recepção", Assert.Single(queues).Name);
-        Assert.Contains("Select-Object Name, PortName", _script);
+        var queue = Assert.Single(queues);
+        Assert.Equal("Recepção", queue.Name);
+        Assert.Equal("EPSON Universal Print Driver", queue.DriverName);
+        Assert.Contains("Select-Object Name, PortName, DriverName", _script);
         _json = "true";
         Assert.True(await _sut.PrinterQueueExistsAsync(Host, Credential, "Recepção d'água"));
         Assert.Contains("Name=", _script);

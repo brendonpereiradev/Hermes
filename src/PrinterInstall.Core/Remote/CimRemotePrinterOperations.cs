@@ -240,7 +240,7 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
         return ExecuteQueryAsync(computerName, credential, () => Task.Run<IReadOnlyList<RemotePrinterQueueInfo>>(() =>
         {
             var scope = ConnectRemote(computerName, credential);
-            var query = new ObjectQuery("SELECT Name, PortName FROM Win32_Printer");
+            var query = new ObjectQuery("SELECT Name, PortName, DriverName FROM Win32_Printer");
             using var searcher = new ManagementObjectSearcher(scope, query);
             var list = new List<RemotePrinterQueueInfo>();
             foreach (ManagementObject mo in searcher.Get())
@@ -252,12 +252,13 @@ public sealed class CimRemotePrinterOperations : IRemotePrinterOperations
                     if (string.IsNullOrWhiteSpace(name))
                         continue;
                     var port = mo["PortName"]?.ToString();
-                    list.Add(new RemotePrinterQueueInfo(name, port));
+                    var driver = mo["DriverName"]?.ToString();
+                    list.Add(new RemotePrinterQueueInfo(name, port, driver));
                 }
             }
             return list;
         }, cancellationToken).WaitAsync(cancellationToken),
-            "$queryResult = @(Get-CimInstance Win32_Printer | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) } | Select-Object Name, PortName)",
+            "$queryResult = @(Get-CimInstance Win32_Printer | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) } | Select-Object Name, PortName, DriverName)",
             cancellationToken);
     }
 

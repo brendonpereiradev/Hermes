@@ -66,6 +66,92 @@ public class PrinterDeploymentOrchestratorMultiPrinterTests
     }
 
     [Fact]
+    public async Task RunAsync_QueueExistsWithDifferentDriverAndPort_LogsDifferencesWithoutChangingQueue()
+    {
+        var epson = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Epson);
+        var m = CreateExistingQueueMock(epson, new RemotePrinterQueueInfo("OPME", "WSD-1234", "Microsoft IPP Class Driver"));
+        var (events, log) = await RunExistingQueueAsync(m.Object);
+
+        var line = Assert.Single(log, l => l.Contains("difere do planejado"));
+        Assert.Contains("driver 'Microsoft IPP Class Driver'", line);
+        Assert.Contains($"planejado: '{epson}'", line);
+        Assert.Contains("porta 'WSD-1234' (planejada: '10.1.152.79')", line);
+        Assert.Contains(events, e => e is { State: TargetMachineState.SkippedAlreadyExists, PrinterQueueName: "OPME" });
+        m.Verify(x => x.AddPrinterAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("10.1.152.79")]
+    [InlineData("IP_10.1.152.79")]
+    public async Task RunAsync_QueueExistsWithPlannedDriverAndPort_DoesNotLogDifferences(string portName)
+    {
+        var epson = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Epson);
+        var m = CreateExistingQueueMock(epson, new RemotePrinterQueueInfo("OPME", portName, epson));
+        var (events, log) = await RunExistingQueueAsync(m.Object);
+
+        Assert.DoesNotContain(log, l => l.Contains("difere do planejado"));
+        Assert.Contains(events, e => e is { State: TargetMachineState.SkippedAlreadyExists, PrinterQueueName: "OPME" });
+    }
+
+    [Fact]
+    public async Task RunAsync_QueueExistsAndListingFails_StillReportsAlreadyExists()
+    {
+        var epson = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Epson);
+        var m = CreateExistingQueueMock(epson, null);
+        m.Setup(x => x.ListPrinterQueuesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new IOException("rpc failed"));
+        var (events, log) = await RunExistingQueueAsync(m.Object);
+
+        Assert.Contains(log, l => l.Contains("não foi possível ler driver/porta"));
+        Assert.Contains(events, e => e is { State: TargetMachineState.SkippedAlreadyExists, PrinterQueueName: "OPME" });
+    }
+
+    private static Mock<IRemotePrinterOperations> CreateExistingQueueMock(string installedDriver, RemotePrinterQueueInfo? existing)
+    {
+        var m = new Mock<IRemotePrinterOperations>();
+        m.Setup(x => x.GetInstalledDriverNamesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { installedDriver });
+        m.Setup(x => x.PrinterQueueExistsAsync("pc1", It.IsAny<NetworkCredential>(), "OPME", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        if (existing is not null)
+        {
+            m.Setup(x => x.ListPrinterQueuesAsync("pc1", It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new[] { new RemotePrinterQueueInfo("Outra", "10.0.0.9", "Outro driver"), existing });
+        }
+        return m;
+    }
+
+    private static async Task<(List<DeploymentProgressEvent> Events, List<string> Log)> RunExistingQueueAsync(IRemotePrinterOperations remote)
+    {
+        var request = new PrinterDeploymentRequest
+        {
+            TargetComputerNames = new[] { "pc1" },
+            Printers = new[]
+            {
+                new PrinterQueueDefinition
+                {
+                    Brand = PrinterBrand.Epson,
+                    DisplayName = "OPME",
+                    PrinterHostAddress = "10.1.152.79",
+                    PortNumber = 9100,
+                    Protocol = TcpPrinterProtocol.Raw
+                }
+            },
+            DomainCredential = new NetworkCredential("u", "p")
+        };
+
+        var events = new List<DeploymentProgressEvent>();
+        var log = new List<string>();
+        await TestDeploymentOrchestratorFactory.Create(remote).RunAsync(
+            request,
+            new DeploymentRollbackJournal(),
+            new InlineProgress<DeploymentProgressEvent>(events.Add),
+            CancellationToken.None,
+            new InlineProgress<string>(log.Add));
+        return (events, log);
+    }
+
+    [Fact]
     public async Task RunAsync_ProcessesPcsInOrder_AndListDriversOncePerMachine()
     {
         var epson = PrinterCatalog.GetExpectedDriverName(PrinterBrand.Epson);
