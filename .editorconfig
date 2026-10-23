@@ -1,0 +1,21 @@
+root = true
+
+[*]
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,xaml,ps1,py}]
+indent_size = 4
+
+[*.{csproj,props,pubxml,resx,json,yml,yaml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[drivers/**]
+# Arquivos de fabricante assinados: o editor não deve alterá-los.
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset

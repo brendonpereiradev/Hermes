@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      test-packages:
+        patterns: ['Microsoft.NET.Test.Sdk', 'Moq', 'xunit*', 'coverlet*']
+    ignore:
+      # Pacotes do runtime seguem a versão do .NET; a troca de major acompanha a migração de TargetFramework.
+      - dependency-name: 'Microsoft.Extensions.*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'System.*'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

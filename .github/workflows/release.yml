@@ -12,27 +12,27 @@ on:
         default: ''
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-and-release:
-    name: Build & Publish Release
+  build:
+    name: Build & Verify
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.tag_name || github.ref }}
 
       - name: Setup .NET 8 SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: '8.0.x'
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.x'
 
@@ -42,8 +42,8 @@ jobs:
         shell: pwsh
         run: |
           if ($env:REQUESTED_RELEASE_TAG) {
-            [xml]$project = Get-Content 'src/PrinterInstall.App/PrinterInstall.App.csproj'
-            $version = @($project.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+            [xml]$props = Get-Content 'Directory.Build.props'
+            $version = @($props.Project.PropertyGroup.Version | Where-Object { $_ })[0]
             if ($env:REQUESTED_RELEASE_TAG -ne "v$version") {
               throw 'A tag solicitada deve corresponder à versão do aplicativo.'
             }
@@ -87,15 +87,40 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           ./scripts/Test-Secrets.ps1 -ArtifactPath 'publish/PrinterInstall'
 
+      - name: Upload release files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-files
+          path: |
+            publish/PrinterInstall/Printer Install.exe
+            publish/PrinterInstall/checksums-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag_name != ''
+    runs-on: ubuntu-latest
+    # Só este job, sem checkout nem build, recebe permissão de escrita.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release files
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-files
+          path: release-files
+
       - name: Create GitHub Release and upload assets
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.tag_name != ''
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           name: Release ${{ github.event.inputs.tag_name || github.ref_name }}
           files: |
-            publish/PrinterInstall/Printer Install.exe
-            publish/PrinterInstall/checksums-sha256.txt
+            release-files/Printer Install.exe
+            release-files/checksums-sha256.txt
           generate_release_notes: true
           draft: false
           prerelease: false

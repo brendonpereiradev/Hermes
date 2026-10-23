@@ -1,0 +1,14 @@
+# Texto é guardado com LF no repositório; o checkout segue a configuração de cada máquina.
+* text=auto
+
+# Os catálogos .CAT dos drivers assinam os arquivos com CRLF. Um checkout com LF invalida a
+# assinatura, então os arquivos de texto dos drivers sempre saem com CRLF, em qualquer máquina.
+drivers/** text=auto eol=crlf
+
+# Modelos Seagull e o INF de teste reproduzem arquivos gerados no Windows.
+*.sds text eol=crlf
+*.inf text eol=crlf
+
+*.png binary
+*.ico binary
+*.zip binary
