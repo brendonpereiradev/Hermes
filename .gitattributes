@@ -1,13 +1,15 @@
 # Texto é guardado com LF no repositório; o checkout segue a configuração de cada máquina.
 * text=auto
 
-# Os catálogos .CAT dos drivers assinam os arquivos com CRLF. Um checkout com LF invalida a
-# assinatura, então os arquivos de texto dos drivers sempre saem com CRLF, em qualquer máquina.
-drivers/** text=auto eol=crlf
+# Pacotes de driver ficam no Git LFS, byte a byte como o fabricante entregou: os catálogos .CAT
+# assinam os arquivos de texto com CRLF, e o LFS não aplica conversão de fim de linha.
+drivers/** filter=lfs diff=lfs merge=lfs -text
+# Documentação própria do projeto, verificada pelo Test-PublicData.py.
+drivers/Gainscha/label-presets/** !filter !diff !merge text=auto
 
 # Modelos Seagull e o INF de teste reproduzem arquivos gerados no Windows.
-*.sds text eol=crlf
-*.inf text eol=crlf
+src/**/*.sds text eol=crlf
+tests/**/*.inf text eol=crlf
 
 *.png binary
 *.ico binary

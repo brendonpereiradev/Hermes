@@ -205,11 +205,7 @@ public partial class MainViewModel : ObservableObject
     private void ExportLog()
     {
         Log.SetSensitiveValue(_session.Credential?.Password);
-        var operatorId = _session.Credential is not null
-            ? (string.IsNullOrEmpty(_session.Credential.Domain)
-                ? _session.Credential.UserName
-                : $@"{_session.Credential.Domain}\{_session.Credential.UserName}")
-            : null;
+        var operatorId = OperationLog.DescribeOperator(_session.Credential);
 
         var targetSummaries = Targets.Select(t => (
             t.ComputerName,
@@ -348,20 +344,7 @@ public partial class MainViewModel : ObservableObject
         {
             if (!ComputerNameValidator.IsPlausibleComputerName(n))
             {
-                foreach (var def in definitions)
-                {
-                    var row = new TargetRowViewModel
-                    {
-                        ComputerName = n,
-                        PrinterQueueName = def.DisplayName,
-                        ExpectedPortName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, DefaultDeployPort),
-                        State = TargetMachineState.Error,
-                        Message = UiStrings.Main_InvalidComputerNameFormat
-                    };
-                    Targets.Add(row);
-                    ConfigureTargetRowDisplay(row, n);
-                }
-
+                AddTargetRows(n, definitions, TargetMachineState.Error, UiStrings.Main_InvalidComputerNameFormat);
                 continue;
             }
 
@@ -372,20 +355,7 @@ public partial class MainViewModel : ObservableObject
             return;
 
         foreach (var n in validNames)
-        {
-            foreach (var def in definitions)
-            {
-                var row = new TargetRowViewModel
-                {
-                    ComputerName = n,
-                    PrinterQueueName = def.DisplayName,
-                    ExpectedPortName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, DefaultDeployPort),
-                    State = TargetMachineState.Pending
-                };
-                Targets.Add(row);
-                ConfigureTargetRowDisplay(row, n);
-            }
-        }
+            AddTargetRows(n, definitions, TargetMachineState.Pending, message: null);
 
         var request = new PrinterDeploymentRequest
         {
@@ -421,24 +391,7 @@ public partial class MainViewModel : ObservableObject
                     !string.IsNullOrWhiteSpace(e.Detail))
                     identityBlockReasons.Add(e.Detail);
 
-                if (e.PrinterQueueName is null)
-                {
-                    foreach (var row in Targets.Where(t => t.ComputerName == e.ComputerName))
-                    {
-                        row.State = e.State;
-                        row.Message = e.Message;
-                    }
-                }
-                else
-                {
-                    var line = Targets.FirstOrDefault(
-                        t => t.ComputerName == e.ComputerName && t.PrinterQueueName == e.PrinterQueueName);
-                    if (line is not null)
-                    {
-                        line.State = e.State;
-                        line.Message = e.Message;
-                    }
-                }
+                DeploymentTargetRows.ApplyProgress(Targets, e);
 
                 var q = e.PrinterQueueName ?? "geral";
                 var stateText = TargetMachineStateDisplay.GetDisplay(e.State);
@@ -464,13 +417,13 @@ public partial class MainViewModel : ObservableObject
             await Task.Run(() => _orchestrator.RunAsync(request, journal, progress, deployToken, diagnosticProgress), deployToken);
             deployToken.ThrowIfCancellationRequested();
 
-            LastSummaryText = BuildSummaryText();
-            NotifyDeployCompletion();
+            LastSummaryText = DeploymentTargetRows.BuildSummaryText(Targets);
+            _notificationService.Notify(DeploymentTargetRows.GetOutcome(Targets));
         }
         catch (OperationCanceledException)
         {
             Log.Append("Deploy interrompido. Verificando alterações desta execução.");
-            OperationLog.RunOnUi(MarkIntermediateTargetsAsDeployCancelled);
+            OperationLog.RunOnUi(() => DeploymentTargetRows.MarkIntermediateAsCancelled(Targets));
 
             if (journal.HasRollbackWork)
             {
@@ -479,7 +432,7 @@ public partial class MainViewModel : ObservableObject
                 {
                     OperationLog.RunOnUi(() =>
                     {
-                        ApplyRollbackProgress(e, journal);
+                        DeploymentTargetRows.ApplyRollbackProgress(Targets, e, journal);
                         Log.Append($"{e.ComputerName}: {e.Message}");
                     });
                 });
@@ -495,31 +448,17 @@ public partial class MainViewModel : ObservableObject
                 }
             }
 
-            OperationLog.RunOnUi(() =>
-            {
-                foreach (var row in Targets)
-                {
-                    if (row.State is TargetMachineState.RollbackRemovingQueue or TargetMachineState.RollbackRemovingPort)
-                    {
-                        row.State = TargetMachineState.RolledBack;
-                    }
-                    else if (IsIntermediateDeployState(row.State))
-                    {
-                        row.State = TargetMachineState.DeployCancelled;
-                        row.Message = UiStrings.Main_DeployCancelledRowMessage;
-                    }
-                }
-            });
+            OperationLog.RunOnUi(() => DeploymentTargetRows.FinalizeAfterRollback(Targets));
 
             Log.Append(UiStrings.Main_DeployCooperativeCancelHint);
-            LastSummaryText = BuildSummaryText();
+            LastSummaryText = DeploymentTargetRows.BuildSummaryText(Targets);
             _notificationService.NotifyWarning();
         }
         catch (Exception ex)
         {
             Log.Append("Falha inesperada no deploy: " + DiagnosticLogFormatter.FormatExceptionDetails(ex));
             _diagnosticLogger?.LogError("Falha inesperada no deploy.", "MainDeploy", ex);
-            LastSummaryText = BuildSummaryText();
+            LastSummaryText = DeploymentTargetRows.BuildSummaryText(Targets);
             _notificationService.NotifyWarning();
         }
         finally
@@ -554,88 +493,31 @@ public partial class MainViewModel : ObservableObject
         if (_deployCts is null || IsCancellationRequested) return;
         IsCancellationRequested = true;
         Log.Append(UiStrings.Main_DeployCancelRequested + " Encerrando a etapa atual; novas etapas não serão iniciadas.");
-        foreach (var row in Targets.Where(r => IsIntermediateDeployState(r.State)))
+        foreach (var row in Targets.Where(r => DeploymentTargetRows.IsIntermediateState(r.State)))
             row.Message = "Cancelamento solicitado — aguardando encerramento";
         _deployCts.Cancel();
     }
 
     private bool CanCancelDeploy() => IsDeployRunning && !IsCancellationRequested;
 
-    private void MarkIntermediateTargetsAsDeployCancelled()
+    private void AddTargetRows(string computerName, IEnumerable<PrinterQueueDefinition> definitions,
+        TargetMachineState state, string? message)
     {
-        foreach (var row in Targets.Where(r => IsIntermediateDeployState(r.State)))
+        foreach (var def in definitions)
         {
-            row.State = TargetMachineState.DeployCancelled;
-            row.Message = UiStrings.Main_DeployCancelledRowMessage;
+            var row = new TargetRowViewModel
+            {
+                ComputerName = computerName,
+                PrinterQueueName = def.DisplayName,
+                ExpectedPortName = PrinterPortNaming.BuildPortName(def.PrinterHostAddress, DefaultDeployPort),
+                State = state
+            };
+            if (message is not null)
+                row.Message = message;
+            Targets.Add(row);
+            ConfigureTargetRowDisplay(row, computerName);
         }
     }
-
-    private static bool IsIntermediateDeployState(TargetMachineState s) =>
-        s is TargetMachineState.Pending
-            or TargetMachineState.IdentifyingPrinter
-            or TargetMachineState.ValidatingPrinter
-            or TargetMachineState.ContactingRemote
-            or TargetMachineState.ValidatingDriver
-            or TargetMachineState.InstallingDriver
-            or TargetMachineState.DriverInstalledReconfirming
-            or TargetMachineState.Configuring;
-
-    private void ApplyRollbackProgress(PrinterRemovalProgressEvent e, DeploymentRollbackJournal journal)
-    {
-        switch (e.State)
-        {
-            case PrinterRemovalProgressState.ContactingRemote:
-                foreach (var row in Targets.Where(t =>
-                             string.Equals(t.ComputerName, e.ComputerName, StringComparison.OrdinalIgnoreCase)
-                             && JournalTouchesRow(journal, t)))
-                {
-                    row.State = TargetMachineState.RollbackRemovingQueue;
-                    row.Message = UiStrings.Main_RollbackPreparingOnHost;
-                }
-                break;
-            case PrinterRemovalProgressState.RemovingQueue:
-                if (FindTargetRow(e.ComputerName, e.PrinterQueueName) is { } rq)
-                {
-                    rq.State = TargetMachineState.RollbackRemovingQueue;
-                    rq.Message = e.Message;
-                }
-                break;
-            case PrinterRemovalProgressState.RemovingOrphanPort:
-                if (ResolveRollbackRow(e) is { } rp)
-                {
-                    rp.State = TargetMachineState.RollbackRemovingPort;
-                    rp.Message = e.Message;
-                }
-                break;
-            case PrinterRemovalProgressState.RollbackSucceeded:
-                if (ResolveRollbackRow(e) is { } ok)
-                {
-                    ok.State = TargetMachineState.RolledBack;
-                    ok.Message = e.Message;
-                }
-                break;
-            case PrinterRemovalProgressState.Warning:
-                if (ResolveRollbackRow(e) is { } w)
-                {
-                    w.State = TargetMachineState.Error;
-                    w.Message = e.Message;
-                }
-                break;
-            case PrinterRemovalProgressState.Error:
-                if (ResolveRollbackRow(e) is { } errRow)
-                {
-                    errRow.State = TargetMachineState.Error;
-                    errRow.Message = e.Message;
-                }
-                break;
-        }
-    }
-
-    private static bool JournalTouchesRow(DeploymentRollbackJournal journal, TargetRowViewModel row) =>
-        journal.QueueEntries.Any(q => string.Equals(q.ComputerName, row.ComputerName, StringComparison.OrdinalIgnoreCase)
-                                     && string.Equals(q.PrinterName, row.PrinterQueueName, StringComparison.OrdinalIgnoreCase))
-        || journal.PortOnlyEntries.Any(p => string.Equals(p.Computer, row.ComputerName, StringComparison.OrdinalIgnoreCase)
-                                            && string.Equals(p.PortName, row.ExpectedPortName, StringComparison.OrdinalIgnoreCase));
 
     private void ConfigureTargetRowDisplay(TargetRowViewModel row, string computerName)
     {
@@ -646,139 +528,23 @@ public partial class MainViewModel : ObservableObject
             : computerName;
     }
 
-    private TargetRowViewModel? FindTargetRow(string computer, string? printerQueue)
-    {
-        if (string.IsNullOrEmpty(printerQueue))
-            return null;
-        return Targets.FirstOrDefault(t =>
-            string.Equals(t.ComputerName, computer, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(t.PrinterQueueName, printerQueue, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private TargetRowViewModel? FindTargetRowByPort(string computer, string? portName)
-    {
-        if (string.IsNullOrWhiteSpace(portName))
-            return null;
-        return Targets.FirstOrDefault(t =>
-            string.Equals(t.ComputerName, computer, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(t.ExpectedPortName, portName, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private TargetRowViewModel? ResolveRollbackRow(PrinterRemovalProgressEvent e) =>
-        FindTargetRow(e.ComputerName, e.PrinterQueueName) ?? FindTargetRowByPort(e.ComputerName, e.PortName);
-
-    private string BuildSummaryText()
-    {
-        if (Targets.Count == 0)
-            return string.Empty;
-
-        var ok = 0;
-        var skipped = 0;
-        var err = 0;
-        var aborted = 0;
-        var rolledBack = 0;
-        var deployCancelled = 0;
-        var other = 0;
-        foreach (var t in Targets)
-        {
-            switch (t.State)
-            {
-                case TargetMachineState.CompletedSuccess: ok++; break;
-                case TargetMachineState.SkippedAlreadyExists: skipped++; break;
-                case TargetMachineState.Error: err++; break;
-                case TargetMachineState.PrinterIdentityMismatch: err++; break;
-                case TargetMachineState.PrinterIdentityUnknown: err++; break;
-                case TargetMachineState.AbortedDriverMissing: aborted++; break;
-                case TargetMachineState.RolledBack: rolledBack++; break;
-                case TargetMachineState.DeployCancelled: deployCancelled++; break;
-                default: other++; break;
-            }
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, aborted));
-        if (other > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, other));
-        if (rolledBack > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryRolledBackFormat, rolledBack));
-        if (deployCancelled > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryDeployCancelledFormat, deployCancelled));
-
-        if (err > 0 || aborted > 0)
-        {
-            foreach (var t in Targets.Where(x => x.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing or TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown))
-            {
-                sb.AppendLine(
-                    string.Format(UiStrings.Main_SummaryFailureLineFormat, t.ComputerName, t.PrinterQueueName, t.Message));
-            }
-        }
-
-        return sb.ToString();
-    }
-
-    private void NotifyDeployCompletion()
-    {
-        if (Targets.Count == 0)
-            return;
-
-        var successCount = Targets.Count(t => t.State is TargetMachineState.CompletedSuccess or TargetMachineState.SkippedAlreadyExists);
-        var errorCount = Targets.Count(t => t.State is TargetMachineState.Error or TargetMachineState.AbortedDriverMissing or TargetMachineState.PrinterIdentityMismatch or TargetMachineState.PrinterIdentityUnknown);
-        var cancelCount = Targets.Count(t => t.State is TargetMachineState.DeployCancelled or TargetMachineState.RolledBack);
-
-        if (cancelCount > 0)
-        {
-            _notificationService.NotifyWarning();
-        }
-        else if (errorCount == 0 && successCount > 0)
-        {
-            _notificationService.NotifySuccess();
-        }
-        else if (successCount == 0 && errorCount > 0)
-        {
-            _notificationService.NotifyError();
-        }
-        else
-        {
-            _notificationService.NotifyWarning();
-        }
-    }
-
     [RelayCommand]
     private void OpenLogFolder() => Log.OpenFolder();
 
     [RelayCommand]
-    private void OpenRemovalWizard()
-    {
-        var window = _serviceProvider.GetRequiredService<Views.RemovalWizardWindow>();
-        var owner = Application.Current.Windows
-            .OfType<Window>()
-            .FirstOrDefault(w => w.IsLoaded && w.IsVisible && !ReferenceEquals(w, window));
-        if (owner is not null)
-            window.Owner = owner;
-        window.ShowDialog();
-    }
+    private void OpenRemovalWizard() => ShowDialog<Views.RemovalWizardWindow>();
 
     [RelayCommand]
-    private void OpenPrinterNetworkTest()
+    private void OpenPrinterNetworkTest() => ShowDialog<Views.PrinterNetworkTestWindow>();
+
+    private void ShowDialog<TWindow>() where TWindow : Window
     {
-        var window = _serviceProvider.GetRequiredService<Views.PrinterNetworkTestWindow>();
+        var window = _serviceProvider.GetRequiredService<TWindow>();
         var owner = Application.Current.Windows
             .OfType<Window>()
             .FirstOrDefault(w => w.IsLoaded && w.IsVisible && !ReferenceEquals(w, window));
         if (owner is not null)
             window.Owner = owner;
         window.ShowDialog();
-    }
-
-    private sealed class SynchronousProgress<T> : IProgress<T>
-    {
-        private readonly Action<T> _handler;
-
-        public SynchronousProgress(Action<T> handler)
-        {
-            _handler = handler;
-        }
-
-        public void Report(T value) => _handler(value);
     }
 }

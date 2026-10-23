@@ -101,57 +101,15 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
     }
 
-    public string PingBadgeBackground => (PingStatus, IsCurrentDarkTheme()) switch
-    {
-        (ComputerPingStatus.Checking, true) => "#FF291C0E",
-        (ComputerPingStatus.Checking, false) => "#FFFFF4E5",
-        (ComputerPingStatus.Online, true) => "#FF0D2818",
-        (ComputerPingStatus.Online, false) => "#FFE7F6EC",
-        (ComputerPingStatus.Offline, true) => "#FF2D1214",
-        (ComputerPingStatus.Offline, false) => "#FFFCE8E8",
-        _ => "Transparent"
-    };
+    public string PingBadgeBackground => PingBadgePalette.Background(PingStatus, IsCurrentDarkTheme());
 
-    public string PingBadgeBorder => (PingStatus, IsCurrentDarkTheme()) switch
-    {
-        (ComputerPingStatus.Checking, true) => "#FF92400E",
-        (ComputerPingStatus.Checking, false) => "#FFE2BD7A",
-        (ComputerPingStatus.Online, true) => "#FF166534",
-        (ComputerPingStatus.Online, false) => "#FF87C79B",
-        (ComputerPingStatus.Offline, true) => "#FF991B1B",
-        (ComputerPingStatus.Offline, false) => "#FFE59A9A",
-        _ => "Transparent"
-    };
+    public string PingBadgeBorder => PingBadgePalette.Border(PingStatus, IsCurrentDarkTheme());
 
-    public string PingBadgeForeground => (PingStatus, IsCurrentDarkTheme()) switch
-    {
-        (ComputerPingStatus.Checking, true) => "#FFFBBF24",
-        (ComputerPingStatus.Checking, false) => "#FF8A5A00",
-        (ComputerPingStatus.Online, true) => "#FF4ADE80",
-        (ComputerPingStatus.Online, false) => "#FF1F6B35",
-        (ComputerPingStatus.Offline, true) => "#FFF87171",
-        (ComputerPingStatus.Offline, false) => "#FF8C1D1D",
-        _ => "#FFA1A1AA"
-    };
+    public string PingBadgeForeground => PingBadgePalette.Foreground(PingStatus, IsCurrentDarkTheme());
 
-    public string PingBadgeIcon => PingStatus switch
-    {
-        ComputerPingStatus.Checking => "\uE895",
-        ComputerPingStatus.Online => "\uE73E",
-        ComputerPingStatus.Offline => "\uEB90",
-        _ => ""
-    };
+    public string PingBadgeIcon => PingBadgePalette.Icon(PingStatus);
 
-    public string PingBadgeIconForeground => (PingStatus, IsCurrentDarkTheme()) switch
-    {
-        (ComputerPingStatus.Checking, true) => "#FFFBBF24",
-        (ComputerPingStatus.Checking, false) => "#FF8A5A00",
-        (ComputerPingStatus.Online, true) => "#FF4ADE80",
-        (ComputerPingStatus.Online, false) => "#FF1F6B35",
-        (ComputerPingStatus.Offline, true) => "#FFF87171",
-        (ComputerPingStatus.Offline, false) => "#FFDC2626",
-        _ => "Transparent"
-    };
+    public string PingBadgeIconForeground => PingBadgePalette.IconForeground(PingStatus, IsCurrentDarkTheme());
 
     partial void OnPingStatusChanged(ComputerPingStatus value)
     {
@@ -474,7 +432,7 @@ public partial class RemovalWizardViewModel : ObservableObject
             var successfulRenames = Math.Max(0, totalRenames - renameErrors);
             var effectiveSuccessCount = queueSuccessCount + successfulRenames;
 
-            NotifyControlCompletion(totalActions, effectiveSuccessCount, warningCount, errorCount);
+            _notificationService.Notify(GetControlOutcome(totalActions, effectiveSuccessCount, warningCount, errorCount));
 
             var summary = BuildSummaryText(effectiveSuccessCount, warningCount, errorCount, failureLines);
             Log.Append(summary);
@@ -514,23 +472,15 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
     }
 
-    private void NotifyControlCompletion(int totalActions, int successCount, int warningCount, int errorCount)
+    private static OperationOutcome GetControlOutcome(int totalActions, int successCount, int warningCount, int errorCount)
     {
         if (totalActions == 0)
-            return;
-
+            return OperationOutcome.None;
         if (errorCount == 0 && warningCount == 0)
-        {
-            _notificationService.NotifySuccess();
-        }
-        else if (errorCount > 0 && successCount == 0 && errorCount >= totalActions)
-        {
-            _notificationService.NotifyError();
-        }
-        else
-        {
-            _notificationService.NotifyWarning();
-        }
+            return OperationOutcome.Success;
+        if (errorCount > 0 && successCount == 0 && errorCount >= totalActions)
+            return OperationOutcome.Error;
+        return OperationOutcome.Warning;
     }
 
     private static string BuildSummaryText(int successCount, int warningCount, int errorCount, IReadOnlyList<string> failureLines)
@@ -742,11 +692,7 @@ public partial class RemovalWizardViewModel : ObservableObject
     private void ExportLog()
     {
         Log.SetSensitiveValue(_session.Credential?.Password);
-        var operatorId = _session.Credential is not null
-            ? (string.IsNullOrEmpty(_session.Credential.Domain)
-                ? _session.Credential.UserName
-                : $@"{_session.Credential.Domain}\{_session.Credential.UserName}")
-            : null;
+        var operatorId = OperationLog.DescribeOperator(_session.Credential);
 
         Log.Export(
             $"PrinterInstall_Controle_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt",
@@ -768,17 +714,5 @@ public partial class RemovalWizardViewModel : ObservableObject
     {
         _loadCts?.Cancel();
         CloseRequested?.Invoke(this, EventArgs.Empty);
-    }
-
-    private sealed class SynchronousProgress<T> : IProgress<T>
-    {
-        private readonly Action<T> _handler;
-
-        public SynchronousProgress(Action<T> handler)
-        {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-        }
-
-        public void Report(T value) => _handler(value);
     }
 }

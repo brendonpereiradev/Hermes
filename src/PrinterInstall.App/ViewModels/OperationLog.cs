@@ -97,6 +97,12 @@ public sealed partial class OperationLog : ObservableObject
         }
     }
 
+    /// <summary>Identificação do operador no cabeçalho dos relatórios exportados.</summary>
+    public static string? DescribeOperator(System.Net.NetworkCredential? credential) =>
+        credential is null ? null
+            : string.IsNullOrEmpty(credential.Domain) ? credential.UserName
+            : $@"{credential.Domain}\{credential.UserName}";
+
     public static void RunOnUi(Action action)
     {
         if (Application.Current?.Dispatcher is not null && !Application.Current.Dispatcher.CheckAccess())

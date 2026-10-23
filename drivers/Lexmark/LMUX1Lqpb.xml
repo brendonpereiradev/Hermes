@@ -1,24 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Properties xmlns= "http://schemas.microsoft.com/windows/2011/08/printing/queueproperties">
-  <Property Name="Watermarks.xml">
-   <String></String>
-  </Property>
-  <Property Name="Profiles.xml">
-    <String></String>
-  </Property>
-  <Property Name="Configuration.xml">
-    <String></String>
-  </Property>
-  <Property Name="ConfigurationUniqueKey">
-    <String></String>
-  </Property> 
-  <Property Name="ConfigurationUtilitySupported">
-    <String>true</String>
-  </Property>
-  <Property Name="ConfigProperties">
-    <String></String>
-  </Property>
-  <Property Name="PDCUVersionSupported">
-    <String>2.0</String>
-  </Property>
-</Properties>
+version https://git-lfs.github.com/spec/v1
+oid sha256:091b80176a5a7e6f65485e082fa69a9f60cfff6aada18aed237b0c94ac0ce54c
+size 703

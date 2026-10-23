@@ -1,9 +1,3 @@
-<driver version='6.6'>
-
-<font type='Bar Code'>
-Name=Sample Bar Code Font
-Data=WkxJQqgAAABAAAAAeJybwMgABgoaZgbBibkFOakKTolFCs75KakKbvl5JQxIAKTUEEQoMKQwoIEYdAEkwA4m2TDEGfHoQQcAOGsJSg==
-</font>
-
-</driver>
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:285f0342595ca4dd50afb983004bf1f92e7240efcb67c3f97358b68bde08145e
+size 212
