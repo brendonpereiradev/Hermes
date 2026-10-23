@@ -26,7 +26,9 @@ RULES = {
     'internal-domain': re.compile(r'\b[\w-]+(?:\.[\w-]+)*\.(?:local|corp|internal|lan|intranet)(?![\w.-])', re.I),
     'personal-profile-path': re.compile(r'[A-Za-z]:\\+Users\\+[^\\\s"\'<>]+', re.I),
     'cpf': re.compile(r'(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)'),
-    'private-address-in-documentation': re.compile(r'(?<![\d.])(?:10|192\.168|172\.(?:1[6-9]|2\d|3[01]))(?:\.\d{1,3}){2,3}(?![\d.])'),
+    # Exige os quatro octetos: versões como "10.1.0" (Dependabot) não são endereços.
+    'private-address-in-documentation': re.compile(
+        r'(?<![\d.])(?:10(?:\.\d{1,3}){3}|(?:192\.168|172\.(?:1[6-9]|2\d|3[01]))(?:\.\d{1,3}){2})(?![\d.])'),
 }
 
 
