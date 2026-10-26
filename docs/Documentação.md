@@ -1,6 +1,6 @@
 # PrinterInstall: documentação
 
-Guia de uso do PrinterInstall 1.5.4 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do PrinterInstall 1.5.5 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Também disponível em [PDF](Documenta%C3%A7%C3%A3o.pdf).
 
