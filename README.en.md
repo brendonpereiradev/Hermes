@@ -84,7 +84,8 @@ In version 1.6.0 the project got a visual rework to match the other projects in 
 | `dotnet build PrinterInstall.sln` | Builds the solution. |
 | `dotnet run --project src/PrinterInstall.App` | Starts the application. |
 | `dotnet test PrinterInstall.sln` | Runs the tests. |
-| `pwsh scripts/Publish-PrinterInstall.ps1` | Builds the single-file executable in `publish/PrinterInstall`. |
+| `pwsh scripts/Publish-PrinterInstall.ps1` | Builds the single-file executable `Hermes.exe` in `publish/PrinterInstall`. |
+| `python scripts/New-Documentation.py` | Builds the documentation PDF from the Markdown. |
 | `python scripts/Test-PublicData.py` | Checks that the repository holds no real environment data. |
 | `pwsh scripts/Test-Secrets.ps1` | Scans for secrets before pushing changes. |
 

@@ -85,6 +85,7 @@ Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros p
 | `dotnet run --project src/PrinterInstall.App` | Inicia o aplicativo. |
 | `dotnet test PrinterInstall.sln` | Executa os testes. |
 | `pwsh scripts/Publish-PrinterInstall.ps1` | Gera o executável único `Hermes.exe` em `publish/PrinterInstall`. |
+| `python scripts/New-Documentation.py` | Gera o PDF da documentação a partir do Markdown. |
 | `python scripts/Test-PublicData.py` | Confere que o repositório não contém dados reais de ambiente. |
 | `pwsh scripts/Test-Secrets.ps1` | Procura segredos antes de enviar alterações. |
 

@@ -2,6 +2,8 @@
 
 Guia de uso do Hermes (antigo PrinterInstall) 1.6.1 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
+Na versão 1.6.0 o aplicativo passou a se chamar Hermes e ganhou um novo visual, alinhado aos projetos Talos e Hefesto. O executável agora é `Hermes.exe`; configurações e logs continuam na pasta `%LocalAppData%\PrinterInstall`, então quem já usava o aplicativo não perde nada.
+
 Também disponível em [PDF](Documenta%C3%A7%C3%A3o.pdf).
 
 ## Sumário
@@ -29,6 +31,12 @@ O Hermes instala e padroniza impressoras de rede e etiquetadoras térmicas em es
 - desfaz automaticamente o que criou se a instalação falhar ou for cancelada (reversão).
 
 Além da implantação, o aplicativo oferece o **Controle de impressoras** (consultar, remover e renomear filas e reiniciar o spooler) e o **Testar impressora** (envio de página de teste direto para o equipamento).
+
+### Aparência
+
+- O aplicativo tem tema escuro e tema claro. O ícone de sol/lua, no canto superior direito, alterna entre eles e a escolha fica salva.
+- Enquanto uma implantação, o Controle de impressoras ou o Testar impressora estão trabalhando, o emblema do Hermes "voa" na barra de título: a asa bate e as linhas coloridas da folha se imprimem. Quando o trabalho termina, ele para.
+- Se a opção **Mostrar animações no Windows** estiver desligada, o emblema fica sempre parado.
 
 ### Pré-requisitos
 
@@ -99,6 +107,7 @@ Informe seu usuário e senha de rede e clique em **Entrar**. O campo Usuário ac
 
 - **Lembrar-me** guarda apenas o nome de usuário. A senha fica somente na memória durante a execução e nunca é gravada em disco.
 - O ícone de olho mostra ou oculta a senha; o ícone de sol/lua alterna entre tema claro e escuro.
+- **Lembrar-me** e o tema escolhido valem para as próximas aberturas do aplicativo.
 - Em caso de erro, a tela mostra a causa (senha incorreta, conta bloqueada, domínio não encontrado, sem rede/VPN) e o link **Ver detalhes técnicos**.
 
 ### Configurações de domínio e rede
@@ -147,6 +156,10 @@ Ao clicar em **Implantar**, o aplicativo valida os dados e pode exibir avisos:
 ### 4.4 Acompanhamento
 
 Os computadores são processados em paralelo. A tabela **Status** mostra, para cada computador e fila, o estado atual e uma mensagem. Uma falha em uma máquina não interrompe as demais.
+
+Ao lado do título **Status**, o resumo mostra quantas filas foram concluídas sobre o total (ex.: "1 de 3 concluídos"). A barra à direita divide o lote em concluídos (verde), com falha (vermelho) e os demais (cinza): pendentes, em andamento, já existentes, cancelados ou revertidos.
+
+Cada estado aparece com um ponto colorido: cinza para pendente, azul para em andamento, verde para concluído, amarelo para já existe ou cancelado, vermelho para erro e verde-água para revertido.
 
 | Estado | Significado |
 |---|---|
