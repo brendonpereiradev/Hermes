@@ -11,6 +11,12 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+# Pastas de arquitetura dentro dos pacotes de driver são conteúdo do fabricante, não saída de build.
+!drivers/**/x64/
+!drivers/**/x86/
+
+## Python
+__pycache__/
 
 ## Visual Studio / VS Code
 .vs/
