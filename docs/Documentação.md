@@ -1,6 +1,6 @@
 # Hermes: documentação
 
-Guia de uso do Hermes (antigo PrinterInstall) 1.6.0 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do Hermes (antigo PrinterInstall) 1.6.1 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Também disponível em [PDF](Documenta%C3%A7%C3%A3o.pdf).
 
