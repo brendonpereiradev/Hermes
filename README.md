@@ -22,7 +22,7 @@ A solução tem duas camadas: `PrinterInstall.Core` (catálogo de drivers, auten
 
 ## Rework visual
 
-Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros projetos do mesmo escopo, o Talos e o Hefesto. O aplicativo passou a se chamar **Hermes**, o mensageiro dos deuses, e ganhou um emblema próprio com a asa e a folha impressa em ciano, magenta e amarelo. O tema escuro usa as superfícies do Talos, o tema claro as do Hefesto, e o emblema voa na barra de título enquanto uma implantação roda. O repositório e os projetos continuam com o nome PrinterInstall. Detalhes em [Marca do Hermes](docs/brand/README.md).
+Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros projetos do mesmo escopo, o Talos e o Hefesto. O aplicativo passou a se chamar **Hermes**, o mensageiro dos deuses, e ganhou um emblema próprio com a asa e a folha impressa em ciano, magenta e amarelo. O tema escuro usa as superfícies do Talos, o tema claro as do Hefesto, e o emblema voa na barra de título enquanto uma implantação roda. O repositório também passou a se chamar Hermes; os projetos `PrinterInstall.*`, a pasta de configurações e os scripts mantêm o nome antigo. Detalhes em [Marca do Hermes](docs/brand/README.md).
 
 ---
 
@@ -64,8 +64,8 @@ Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros p
 1. Clone o repositório e compile a solução:
 
    ```powershell
-   git clone https://github.com/brendonpereiradev/PrinterInstall.git
-   cd PrinterInstall
+   git clone https://github.com/brendonpereiradev/Hermes.git
+   cd Hermes
    dotnet build PrinterInstall.sln
    ```
 

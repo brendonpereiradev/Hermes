@@ -22,7 +22,7 @@ The solution has two layers: `PrinterInstall.Core` (driver catalog, LDAP authent
 
 ## Visual rework
 
-In version 1.6.0 the project got a visual rework to match the other projects in the same scope, Talos and Hefesto. The application is now called **Hermes**, the messenger of the gods, and has its own emblem: a wing and a printed sheet in cyan, magenta and yellow. The dark theme uses Talos surfaces, the light theme uses Hefesto surfaces, and the emblem flies in the title bar while a deployment runs. The repository and projects keep the PrinterInstall name. See [Hermes brand](docs/brand/README.md) (in Portuguese).
+In version 1.6.0 the project got a visual rework to match the other projects in the same scope, Talos and Hefesto. The application is now called **Hermes**, the messenger of the gods, and has its own emblem: a wing and a printed sheet in cyan, magenta and yellow. The dark theme uses Talos surfaces, the light theme uses Hefesto surfaces, and the emblem flies in the title bar while a deployment runs. The repository is now named Hermes too; the `PrinterInstall.*` projects, the settings folder and the scripts keep the old name. See [Hermes brand](docs/brand/README.md) (in Portuguese).
 
 ---
 
@@ -64,8 +64,8 @@ In version 1.6.0 the project got a visual rework to match the other projects in 
 1. Clone the repository and build the solution:
 
    ```powershell
-   git clone https://github.com/brendonpereiradev/PrinterInstall.git
-   cd PrinterInstall
+   git clone https://github.com/brendonpereiradev/Hermes.git
+   cd Hermes
    dotnet build PrinterInstall.sln
    ```
 

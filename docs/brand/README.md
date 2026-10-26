@@ -1,6 +1,6 @@
 # Marca do Hermes
 
-Hermes é o nome de produto do PrinterInstall desde a versão 1.6.0. O repositório, os projetos `PrinterInstall.*`, a pasta `%LocalAppData%\PrinterInstall` e os scripts continuam com o nome antigo; só a marca visível mudou (janelas, ícone, executável `Hermes.exe`, página de teste e documentação).
+Hermes é o nome de produto do PrinterInstall desde a versão 1.6.0, e o repositório no GitHub também se chama Hermes (o endereço antigo, `.../PrinterInstall`, redireciona). Os projetos `PrinterInstall.*`, a pasta `%LocalAppData%\PrinterInstall` e os scripts continuam com o nome antigo; o resto da marca visível mudou (janelas, ícone, executável `Hermes.exe`, página de teste e documentação).
 
 | Arquivo | Uso |
 | --- | --- |

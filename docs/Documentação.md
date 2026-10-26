@@ -79,8 +79,8 @@ Baixe `Hermes.exe` na página de releases do repositório e copie-o para uma pas
 Requer o [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
 ```powershell
-git clone https://github.com/brendonpereiradev/PrinterInstall.git
-cd PrinterInstall
+git clone https://github.com/brendonpereiradev/Hermes.git
+cd Hermes
 dotnet build PrinterInstall.sln
 dotnet run --project src/PrinterInstall.App
 ```
