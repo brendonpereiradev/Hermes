@@ -108,6 +108,7 @@ Informe seu usuário e senha de rede e clique em **Entrar**. O campo Usuário ac
 - **Lembrar-me** guarda apenas o nome de usuário. A senha fica somente na memória durante a execução e nunca é gravada em disco.
 - O ícone de olho mostra ou oculta a senha; o ícone de sol/lua alterna entre tema claro e escuro.
 - **Lembrar-me** e o tema escolhido valem para as próximas aberturas do aplicativo.
+- Enquanto o domínio valida a senha, o botão **Entrar** vira **Cancelar**. Clique nele ou pressione **Esc** para voltar ao formulário na hora, por exemplo quando perceber que digitou a senha errada. A tentativa já enviada ao domínio ainda conta como uma tentativa de senha.
 - Em caso de erro, a tela mostra a causa (senha incorreta, conta bloqueada, domínio não encontrado, sem rede/VPN) e o link **Ver detalhes técnicos**.
 
 ### Configurações de domínio e rede

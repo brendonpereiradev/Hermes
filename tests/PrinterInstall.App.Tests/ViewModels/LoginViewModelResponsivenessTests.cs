@@ -136,7 +136,8 @@ public class LoginViewModelResponsivenessTests
             using var cts = new CancellationTokenSource();
             var completion = new TaskCompletionSource<LdapValidationResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var validator = new Mock<ILdapCredentialValidator>();
-            validator.Setup(v => v.ValidateAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), cts.Token))
+            // A ViewModel passa um token por tentativa, ligado ao da janela (para o botão Cancelar).
+            validator.Setup(v => v.ValidateAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<CancellationToken>()))
                 .Returns(completion.Task);
             var remembered = new Mock<IRememberedUserStore>(MockBehavior.Strict);
             var session = new SessionContext();

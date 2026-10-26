@@ -154,6 +154,35 @@ public class ConfirmationDialogService : IConfirmationDialogService
         dialog.ShowDialog();
     }
 
+    public Task ShowSummaryAsync(string title, string summary, SummaryTone tone)
+    {
+        if (Application.Current is null || string.IsNullOrWhiteSpace(summary))
+            return Task.CompletedTask;
+
+        var dispatcher = Application.Current.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            ShowSummaryDialog(title, summary, tone);
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(() => ShowSummaryDialog(title, summary, tone)).Task;
+    }
+
+    private static void ShowSummaryDialog(string title, string summary, SummaryTone tone)
+    {
+        var dialog = new ConfirmationDialogWindow();
+        var owner = GetActiveOrMainWindow();
+        if (owner is not null && owner != dialog)
+        {
+            dialog.Owner = owner;
+        }
+
+        var lines = summary.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        dialog.ConfigureForSummary(title, lines, UiStrings.Dialog_OkButton, tone);
+        dialog.ShowDialog();
+    }
+
     private static bool ShowDeployWarningDialog(IReadOnlyList<string> warnings)
     {
         var dialog = new ConfirmationDialogWindow();

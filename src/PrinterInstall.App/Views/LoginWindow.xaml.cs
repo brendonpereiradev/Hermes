@@ -23,6 +23,31 @@ public partial class LoginWindow
         _viewModel.PropertyChanged += ViewModel_OnPropertyChanged;
         Loaded += OnLoaded;
         Closed += OnClosed;
+        PreviewKeyDown += OnPreviewKeyDown;
+    }
+
+    private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        // Esc cancela a autenticação em andamento; fora dela, não faz nada.
+        if (e.Key == System.Windows.Input.Key.Escape && _viewModel.IsAuthenticating)
+        {
+            _viewModel.CancelLoginCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    private void FocusPasswordForRetry()
+    {
+        if (_viewModel.IsPasswordRevealed)
+        {
+            RevealedPasswordTextBox.Focus();
+            RevealedPasswordTextBox.SelectAll();
+        }
+        else
+        {
+            PasswordBox.Focus();
+            PasswordBox.SelectAll();
+        }
     }
 
     private void OnClosed(object? sender, EventArgs e)
@@ -104,13 +129,22 @@ public partial class LoginWindow
     private async void SignIn_OnClick(object sender, RoutedEventArgs e)
     {
         if (_viewModel.IsAuthenticating)
+        {
+            // O botão vira "Cancelar" enquanto autentica.
+            _viewModel.CancelLoginCommand.Execute(null);
             return;
+        }
 
         try
         {
             var result = await _viewModel.TryLoginAsync(_loginCts.Token).ConfigureAwait(true);
             if (!result.Success)
+            {
+                // Cancelado (sem erro) ou recusado: a senha fica selecionada para digitar de novo.
+                if (result.Error is null)
+                    FocusPasswordForRetry();
                 return;
+            }
 
             var main = _serviceProvider.GetRequiredService<MainWindow>();
             Application.Current.MainWindow = main;

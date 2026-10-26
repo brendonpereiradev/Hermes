@@ -40,5 +40,5 @@
   </g>
   <!-- Nome -->
   <text class="name" x="156" y="74" font-family="Bahnschrift, 'Barlow Condensed', 'Segoe UI', sans-serif" font-size="58" font-weight="600" letter-spacing="18" fill="#e6e9ee">HERMES</text>
-  <text class="tag" x="158" y="103" font-family="'Cascadia Mono', Consolas, ui-monospace, monospace" font-size="15" letter-spacing="5.4" fill="#8db5fa">IMPLANTAÇÃO DE IMPRESSORAS</text>
+  <text class="tag" x="158" y="103" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" font-size="15" letter-spacing="5.4" fill="#8db5fa">IMPLANTAÇÃO DE IMPRESSORAS</text>
 </svg>

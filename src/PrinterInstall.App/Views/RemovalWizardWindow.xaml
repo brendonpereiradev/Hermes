@@ -72,6 +72,8 @@
                                 Content="{DynamicResource Removal_Next}" Command="{Binding StartCommand}" Margin="0,8,0,0" Style="{StaticResource PrimaryActionButtonStyle}" IsDefault="True"/>
                         <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
                                  AcceptsReturn="True"
+                                 FontFamily="{StaticResource AppMonoFontFamily}"
+                                 FontSize="13"
                                  TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                     </DockPanel>
                 </TabItem>
@@ -89,25 +91,17 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding CurrentStepLabel}" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource AppTextPrimaryBrush}" VerticalAlignment="Center"/>
-                                <Border Margin="12,0,0,0" Padding="8,3" CornerRadius="12" VerticalAlignment="Center"
-                                        Visibility="{Binding HasPingBadge, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        Background="{Binding PingBadgeBackground}"
-                                        BorderBrush="{Binding PingBadgeBorder}"
-                                        BorderThickness="1">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding PingBadgeIcon}"
-                                                   FontFamily="Segoe MDL2 Assets"
-                                                   FontSize="10"
-                                                   Foreground="{Binding PingBadgeIconForeground}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,5,0"/>
-                                        <TextBlock Text="{Binding PingStatusBadgeText}"
-                                                   Foreground="{Binding PingBadgeForeground}"
-                                                   FontWeight="Medium"
-                                                   FontSize="11"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
+                                <!-- Conectividade como na tabela de status: ponto colorido e texto, sem etiqueta. -->
+                                <StackPanel Margin="14,0,0,0" Orientation="Horizontal" VerticalAlignment="Center"
+                                            Visibility="{Binding HasPingBadge, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Ellipse Width="8" Height="8" Margin="0,1,8,0" VerticalAlignment="Center"
+                                             Fill="{Binding PingBadgeDot}"/>
+                                    <TextBlock Text="{Binding PingStatusBadgeText}"
+                                               Foreground="{Binding PingBadgeForeground}"
+                                               FontWeight="Medium"
+                                               FontSize="13"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
                             </StackPanel>
                             <ui:Button Grid.Row="0" Grid.Column="1"
                                        Content="{DynamicResource Removal_ResetSpoolerButton}"
@@ -231,6 +225,8 @@
                                     <DataGridTextColumn Header="{DynamicResource Removal_ColumnPort}" Binding="{Binding PortName}" Width="200" IsReadOnly="True">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
+                                                <!-- Porta é dado (IP_<endereço>): Consolas, como a coluna Computador da janela principal. -->
+                                                <Setter Property="FontFamily" Value="{StaticResource AppMonoFontFamily}"/>
                                                 <Setter Property="VerticalAlignment" Value="Center"/>
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                             </Style>
@@ -241,7 +237,7 @@
                                             <DataTemplate>
                                                 <Border BorderBrush="{DynamicResource AppInputBorderBrush}"
                                                         BorderThickness="1"
-                                                        CornerRadius="6"
+                                                        CornerRadius="4"
                                                         Background="{DynamicResource AppInputBackgroundBrush}"
                                                         Padding="4,2"
                                                         VerticalAlignment="Center">
@@ -326,36 +322,22 @@
                                 CornerRadius="6"
                                 Padding="12,8">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <!-- Remoções -->
-                                <Border Background="{DynamicResource AppBadgeDangerBackgroundBrush}"
-                                        BorderBrush="{DynamicResource AppBadgeDangerBorderBrush}"
-                                        BorderThickness="1" CornerRadius="12" Padding="8,3" Margin="0,0,10,0">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource Removal_ReviewRemovals}" Margin="0,0,4,0" FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding ReviewTotalRemovals}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                <!-- Renomeações -->
-                                <Border Background="{DynamicResource AppBadgeInfoBackgroundBrush}"
-                                        BorderBrush="{DynamicResource AppBadgeInfoBorderBrush}"
-                                        BorderThickness="1" CornerRadius="12" Padding="8,3" Margin="0,0,10,0">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource Removal_ReviewRenames}" Margin="0,0,4,0" FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding ReviewTotalRenames}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeInfoForegroundBrush}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                <!-- Computadores -->
-                                <Border Background="{DynamicResource AppBadgeNeutralBackgroundBrush}"
-                                        BorderBrush="{DynamicResource AppBadgeNeutralBorderBrush}"
-                                        BorderThickness="1" CornerRadius="12" Padding="8,3">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{DynamicResource Removal_ReviewComputers}" Margin="0,0,4,0" FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding ReviewTotalComputers}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppBadgeNeutralForegroundBrush}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
+                                <!-- Totais do plano: ponto colorido, rótulo e número, como o resumo do Status. -->
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                                    <Ellipse Width="8" Height="8" Margin="0,1,8,0" VerticalAlignment="Center" Fill="{DynamicResource AppBadgeDangerForegroundBrush}"/>
+                                    <TextBlock Text="{DynamicResource Removal_ReviewRemovals}" Margin="0,0,5,0" FontSize="13" Foreground="{DynamicResource AppTextSecondaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ReviewTotalRemovals}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource AppTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,24,0">
+                                    <Ellipse Width="8" Height="8" Margin="0,1,8,0" VerticalAlignment="Center" Fill="{DynamicResource AppBrandAccentBrush}"/>
+                                    <TextBlock Text="{DynamicResource Removal_ReviewRenames}" Margin="0,0,5,0" FontSize="13" Foreground="{DynamicResource AppTextSecondaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ReviewTotalRenames}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource AppTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="8" Height="8" Margin="0,1,8,0" VerticalAlignment="Center" Fill="{DynamicResource AppTextMutedBrush}"/>
+                                    <TextBlock Text="{DynamicResource Removal_ReviewComputers}" Margin="0,0,5,0" FontSize="13" Foreground="{DynamicResource AppTextSecondaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ReviewTotalComputers}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource AppTextPrimaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -395,7 +377,7 @@
                                Foreground="{DynamicResource AppTextPrimaryBrush}"
                                Margin="0,0,0,10"/>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                        <ui:Button Content="{DynamicResource Removal_OpenLogFolderButton}" Command="{Binding OpenLogFolderCommand}" Padding="16,6" Margin="0,0,8,0" Appearance="Transparent"/>
+                        <ui:Button Content="{DynamicResource Removal_OpenLogFolderButton}" Command="{Binding OpenLogFolderCommand}" Icon="{ui:SymbolIcon FolderOpen24}" Style="{StaticResource ToolButtonStyle}" Padding="12,6" Margin="0,0,8,0"/>
                         <ui:Button Content="{DynamicResource Removal_ExportLogButton}"
                                    Command="{Binding ExportLogCommand}"
                                    Padding="16,6" Margin="0,0,8,0" Style="{StaticResource OutlineButtonStyle}"/>

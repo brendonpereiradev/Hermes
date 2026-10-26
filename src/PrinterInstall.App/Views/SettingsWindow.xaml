@@ -27,13 +27,13 @@
         </Style>
     </appControls:HermesWindow.Resources>
     <StackPanel>
-    <ui:TitleBar Title="{DynamicResource Settings_WindowTitle}"
-                 ShowMaximize="False"
-                 ShowMinimize="False">
-        <ui:TitleBar.Icon>
-            <ui:ImageIcon Source="{StaticResource HermesEmblemSmallImage}"/>
-        </ui:TitleBar.Icon>
-    </ui:TitleBar>
+    <Grid>
+        <ui:TitleBar ShowMaximize="False"
+                     ShowMinimize="False"/>
+        <appControls:BrandTitle Margin="16,0,0,0"
+                                HorizontalAlignment="Left"
+                                Subtitle="{DynamicResource Settings_WindowTitle}"/>
+    </Grid>
     <Grid Margin="24,8,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -67,7 +67,7 @@
                 </Grid.ColumnDefinitions>
                 <Border Grid.Column="0"
                         Height="38"
-                        CornerRadius="6"
+                        CornerRadius="4"
                         BorderBrush="{DynamicResource AppInputBorderBrush}"
                         BorderThickness="1"
                         Background="{DynamicResource AppInputBackgroundBrush}"
@@ -111,7 +111,7 @@
                        Foreground="{DynamicResource AppTextPrimaryBrush}"
                        Margin="0,0,0,6"/>
             <Border Height="38"
-                    CornerRadius="6"
+                    CornerRadius="4"
                     BorderBrush="{DynamicResource AppInputBorderBrush}"
                     BorderThickness="1"
                     Background="{DynamicResource AppInputBackgroundBrush}">
@@ -129,6 +129,7 @@
                     <TextBox Grid.Column="1"
                              Text="{Binding LdapHost, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource SettingsInnerTextBoxStyle}"
+                             FontFamily="{StaticResource AppMonoFontFamily}"
                              Margin="0,0,10,0"/>
                 </Grid>
             </Border>

@@ -58,6 +58,22 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <!-- Durante a autenticação o botão vira "Cancelar", com contorno no lugar do acento cheio. -->
+        <Style x:Key="LoginSubmitButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource PrimaryActionButtonStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsAuthenticating}" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource AppLineStrongBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+                    <Setter Property="MouseOverBackground" Value="{DynamicResource AppSurfaceHoverBrush}"/>
+                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AppBrandAccentBrush}"/>
+                    <Setter Property="PressedBackground" Value="{DynamicResource AppSurfaceHoverBrush}"/>
+                    <Setter Property="PressedForeground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+                    <Setter Property="ToolTip" Value="{DynamicResource Login_CancelSignInToolTip}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="LoginFieldLabelStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
             <Setter Property="FontSize" Value="13"/>
@@ -76,9 +92,8 @@
                      ShowMaximize="False"
                      ShowMinimize="False">
             <ui:TitleBar.TrailingContent>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                    <ui:Button Style="{StaticResource ToolButtonStyle}"
-                               Padding="10,6"
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                    <ui:Button Style="{StaticResource TitleBarToolButtonStyle}"
                                Command="{Binding ToggleThemeCommand}">
                         <ui:Button.ToolTip>
                             <TextBlock>
@@ -96,11 +111,10 @@
                         </ui:Button.ToolTip>
                         <appControls:ThemeToggleIcon Style="{StaticResource ThemeToggleIconStyle}"/>
                     </ui:Button>
-                    <ui:Button Style="{StaticResource ToolButtonStyle}"
-                               Padding="10,6"
+                    <ui:Button Style="{StaticResource TitleBarToolButtonStyle}"
                                ToolTip="{DynamicResource Login_SettingsToolTip}"
                                Click="Settings_OnClick">
-                        <ui:SymbolIcon Symbol="Settings24" FontSize="16" Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                        <ui:SymbolIcon Symbol="Settings24" FontSize="16" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                     </ui:Button>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
@@ -313,14 +327,15 @@
                 </Grid>
             </Border>
 
-            <ui:Button Style="{StaticResource PrimaryActionButtonStyle}"
+            <!-- Entrar; enquanto autentica, o mesmo botão (ou Esc) cancela. Enter não cancela. -->
+            <ui:Button x:Name="SignInButton"
+                       Style="{StaticResource LoginSubmitButtonStyle}"
                        HorizontalAlignment="Stretch"
                        HorizontalContentAlignment="Center"
                        MinHeight="46"
                        Padding="0,10"
                        Margin="0,20,0,0"
-                       IsDefault="True"
-                       IsEnabled="{Binding IsAuthenticating, Converter={StaticResource InverseBoolConverter}}"
+                       IsDefault="{Binding IsAuthenticating, Converter={StaticResource InverseBoolConverter}}"
                        Click="SignIn_OnClick">
                 <Grid>
                     <TextBlock Text="{DynamicResource Login_SignInButton}"
@@ -334,7 +349,7 @@
                                          Height="16"
                                          IsIndeterminate="True"
                                          Margin="0,0,8,0"/>
-                        <TextBlock Text="{DynamicResource Login_SigningInButton}"
+                        <TextBlock Text="{DynamicResource Login_CancelSignInButton}"
                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ui:Button}}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>

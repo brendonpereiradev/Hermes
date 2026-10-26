@@ -15,6 +15,7 @@
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
+  <data name="Dialog_OkButton" xml:space="preserve"><value>OK</value></data>
   <data name="Main_DeployCancelRequested" xml:space="preserve"><value>Cancelamento solicitado pelo operador.</value></data>
   <data name="Main_DeployRollbackStarting" xml:space="preserve"><value>Revertendo alterações criadas nesta execução…</value></data>
   <data name="Main_DeployRollbackFinished" xml:space="preserve"><value>Reversão concluída (ver log).</value></data>

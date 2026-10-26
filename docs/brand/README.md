@@ -34,4 +34,16 @@ Todos os neutros ficam no mesmo matiz azul-ardósia, em três profundidades: no 
 
 A asa usa `#E8A05C` só na marca, para não ser confundida com os avisos amarelos. Os estados usam ponto e texto coloridos: concluído `#3DD68C`, em andamento `#4C8DF6`, atenção `#F2C14E`, erro `#F0605D`, revertido `#2DD4BF` (tons equivalentes no tema claro).
 
-O nome usa Bahnschrift SemiBold em caixa alta espaçada (o par do Barlow Condensed do Talos, que já vem no Windows); o texto, Segoe UI; dados como IP, nome de computador e log, Cascadia Mono. Nos SVGs os textos estão como `<text>` com fontes de reserva; para impressão, converta-os em contornos.
+A tipografia tem três papéis fixos, todos com fontes que já vêm no Windows:
+
+| Fonte | Onde |
+| --- | --- |
+| Segoe UI | Toda a interface: títulos, rótulos, botões, mensagens, textos de exemplo e contadores (em SemiBold). |
+| Bahnschrift | Só o nome HERMES, em caixa alta espaçada (o par do Barlow Condensed do Talos). |
+| Consolas | Dados que se digitam ou leem como valor (nome de computador, IP, log) e o slogan "IMPLANTAÇÃO DE IMPRESSORAS". |
+
+Textos de instrução nunca usam a Consolas, mesmo dentro de um campo de dados: na caixa de computadores, o exemplo é um texto sobreposto em Segoe UI, porque o placeholder do WPF UI herdaria a fonte do campo. Nos SVGs os textos estão como `<text>` com fontes de reserva; para impressão, converta-os em contornos.
+
+## Barra de título
+
+A barra de título do WPF UI tem 48 px, mas os botões de minimizar, maximizar e fechar vêm com 30 px, presos no topo. `Controls/HermesWindow.cs` estica esses botões para a altura da barra, e as ferramentas (tema, configurações) usam `TitleBarToolButtonStyle`, com 44 × 48 px. Assim o emblema, o nome, as ferramentas e os botões da janela ficam na mesma linha.

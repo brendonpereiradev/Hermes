@@ -17,6 +17,7 @@ public partial class LoginViewModel : ObservableObject
     private readonly IRememberedUserStore _rememberedUserStore;
     private readonly IThemeService? _themeService;
     private readonly IDiagnosticFileLogger? _diagnosticLogger;
+    private CancellationTokenSource? _attemptCts;
 
     public LoginViewModel(
         ILdapCredentialValidator ldap,
@@ -68,6 +69,13 @@ public partial class LoginViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isPasswordRevealed;
+
+    /// <summary>
+    /// Cancela a autenticação em andamento. A tela volta ao formulário na hora; a tentativa
+    /// nativa já enviada ao domínio termina em segundo plano e o resultado é descartado.
+    /// </summary>
+    [RelayCommand]
+    private void CancelLogin() => _attemptCts?.Cancel();
 
     [RelayCommand]
     private void TogglePasswordVisibility()
@@ -165,6 +173,9 @@ public partial class LoginViewModel : ObservableObject
         }
 
         IsAuthenticating = true;
+        // Um token por tentativa, ligado ao do fechamento da janela, para o operador poder cancelar.
+        using var attempt = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _attemptCts = attempt;
         try
         {
             _diagnosticLogger?.RegisterSensitiveValue(Password);
@@ -184,8 +195,10 @@ public partial class LoginViewModel : ObservableObject
             }
 
             // Retoma no contexto da UI para atualizar bindings, estado e sessão.
-            var result = await _ldap.ValidateAsync(ldapHost, cred, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
+            // WaitAsync devolve o controle assim que o login é cancelado, sem esperar a chamada
+            // nativa (Bind, SMB, LogonUser), que não pode ser interrompida no meio.
+            var result = await _ldap.ValidateAsync(ldapHost, cred, attempt.Token).WaitAsync(attempt.Token);
+            attempt.Token.ThrowIfCancellationRequested();
             if (!result.IsSuccess)
             {
                 ShowAuthenticationError(result.FailureKind, result.ErrorMessage, cred.Password);
@@ -211,8 +224,15 @@ public partial class LoginViewModel : ObservableObject
             _session.DomainName = domainName;
             return (true, null);
         }
+        catch (OperationCanceledException) when (attempt.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            // Cancelado pelo operador: volta ao formulário sem mensagem de erro.
+            _diagnosticLogger?.LogInfo("Login cancelado pelo operador.", "Login");
+            return (false, null);
+        }
         finally
         {
+            _attemptCts = null;
             IsAuthenticating = false;
         }
     }

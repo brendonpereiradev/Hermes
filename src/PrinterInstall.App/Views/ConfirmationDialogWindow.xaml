@@ -8,6 +8,7 @@
         Icon="pack://application:,,,/Assets/app.ico"
         Width="540"
         SizeToContent="Height"
+        MinHeight="0"
         MaxHeight="620"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
@@ -20,25 +21,16 @@
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
     </appControls:HermesWindow.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <ui:TitleBar Grid.Row="0"
-                     Title="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
-                     ShowMaximize="False"
-                     ShowMinimize="False">
-            <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="{StaticResource HermesEmblemSmallImage}"/>
-            </ui:TitleBar.Icon>
-        </ui:TitleBar>
-
-        <Grid Grid.Row="1" Margin="20,8,20,20">
+    <!--
+      Sem barra de título: o aviso fica só com o conteúdo e os botões de ação. O título do aviso
+      aparece em destaque no corpo; Esc e os botões fecham a caixa, e o corpo serve para arrastá-la.
+    -->
+    <Grid Background="Transparent" MouseLeftButtonDown="OnBodyMouseLeftButtonDown">
+        <Grid Margin="22,22,22,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <!-- Altura do conteúdo: a caixa encolhe com textos curtos e rola a partir de 260 px. -->
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>

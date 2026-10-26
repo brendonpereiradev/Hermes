@@ -40,4 +40,18 @@ public interface IConfirmationDialogService
     /// Exibe diálogo de aviso quando o operador tenta iniciar o deploy sem nenhum computador alvo configurado.
     /// </summary>
     Task ShowNoComputersWarningAsync();
+
+    /// <summary>
+    /// Exibe um resumo ou erro ao fim de uma execução (implantação ou controle de impressoras),
+    /// uma linha do texto por item, com o ícone do tom informado.
+    /// </summary>
+    Task ShowSummaryAsync(string title, string summary, SummaryTone tone);
+}
+
+/// <summary>Ícone e cores da caixa de resumo.</summary>
+public enum SummaryTone
+{
+    Info,
+    Warning,
+    Error
 }

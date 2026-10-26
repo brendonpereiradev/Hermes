@@ -105,5 +105,6 @@ public class UiStrings
     public static string Main_NoComputersDialogHeader => ResourceManager.GetString(nameof(Main_NoComputersDialogHeader), ResourceCulture)!;
     public static string Main_NoComputersDialogMessage => ResourceManager.GetString(nameof(Main_NoComputersDialogMessage), ResourceCulture)!;
     public static string Main_NoComputersDialogButton => ResourceManager.GetString(nameof(Main_NoComputersDialogButton), ResourceCulture)!;
+    public static string Dialog_OkButton => ResourceManager.GetString(nameof(Dialog_OkButton), ResourceCulture)!;
 }
 

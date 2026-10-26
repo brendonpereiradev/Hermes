@@ -17,5 +17,5 @@
   <path d="M56 50 C44 48 30 40 20 28 M56 62 C44 61 32 56 22 48 M56 74 C46 74 38 71 30 66" fill="none" stroke="#e8a05c" stroke-width="6" stroke-linecap="round"/>
   <!-- Nome -->
   <text x="156" y="74" font-family="Bahnschrift, 'Barlow Condensed', 'Segoe UI', sans-serif" font-size="58" font-weight="600" letter-spacing="18" fill="#0f172a">HERMES</text>
-  <text x="158" y="103" font-family="'Cascadia Mono', Consolas, ui-monospace, monospace" font-size="15" letter-spacing="5.4" fill="#1d4ed8">IMPLANTAÇÃO DE IMPRESSORAS</text>
+  <text x="158" y="103" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" font-size="15" letter-spacing="5.4" fill="#1d4ed8">IMPLANTAÇÃO DE IMPRESSORAS</text>
 </svg>

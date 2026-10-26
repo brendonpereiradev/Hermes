@@ -101,24 +101,15 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
     }
 
-    public string PingBadgeBackground => PingBadgePalette.Background(PingStatus, IsCurrentDarkTheme());
-
-    public string PingBadgeBorder => PingBadgePalette.Border(PingStatus, IsCurrentDarkTheme());
-
     public string PingBadgeForeground => PingBadgePalette.Foreground(PingStatus, IsCurrentDarkTheme());
 
-    public string PingBadgeIcon => PingBadgePalette.Icon(PingStatus);
-
-    public string PingBadgeIconForeground => PingBadgePalette.IconForeground(PingStatus, IsCurrentDarkTheme());
+    public string PingBadgeDot => PingBadgePalette.Dot(PingStatus, IsCurrentDarkTheme());
 
     partial void OnPingStatusChanged(ComputerPingStatus value)
     {
         OnPropertyChanged(nameof(HasPingBadge));
-        OnPropertyChanged(nameof(PingBadgeBackground));
-        OnPropertyChanged(nameof(PingBadgeBorder));
         OnPropertyChanged(nameof(PingBadgeForeground));
-        OnPropertyChanged(nameof(PingBadgeIcon));
-        OnPropertyChanged(nameof(PingBadgeIconForeground));
+        OnPropertyChanged(nameof(PingBadgeDot));
     }
 
     partial void OnIsComputerOfflineChanged(bool value)
@@ -437,13 +428,10 @@ public partial class RemovalWizardViewModel : ObservableObject
             var summary = BuildSummaryText(effectiveSuccessCount, warningCount, errorCount, failureLines);
             Log.Append(summary);
 
-            if (Application.Current is not null)
-            {
-                var icon = errorCount > 0
-                    ? (effectiveSuccessCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Error)
-                    : (warningCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
-                MessageBox.Show(summary, UiStrings.Removal_SummaryDialogTitle, MessageBoxButton.OK, icon);
-            }
+            var tone = errorCount > 0
+                ? (effectiveSuccessCount > 0 ? SummaryTone.Warning : SummaryTone.Error)
+                : (warningCount > 0 ? SummaryTone.Warning : SummaryTone.Info);
+            await _dialogService.ShowSummaryAsync(UiStrings.Removal_SummaryDialogTitle, summary, tone).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -457,14 +445,10 @@ public partial class RemovalWizardViewModel : ObservableObject
             Log.Append(string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted));
             _notificationService.NotifyError();
 
-            if (Application.Current is not null)
-            {
-                MessageBox.Show(
-                    string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted),
-                    UiStrings.Removal_SummaryDialogTitle,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            await _dialogService.ShowSummaryAsync(
+                UiStrings.Removal_SummaryDialogTitle,
+                string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted),
+                SummaryTone.Error).ConfigureAwait(true);
         }
         finally
         {

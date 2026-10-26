@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using PrinterInstall.App.Controls;
+using PrinterInstall.App.Services;
 using Wpf.Ui.Controls;
 using TextBlock = System.Windows.Controls.TextBlock;
 
@@ -128,6 +129,37 @@ public partial class ConfirmationDialogWindow : HermesWindow
         // Ícone de aviso (laranja/âmbar)
         IconGlyphText.Text = "\uE7BA"; // Warning icon
         ApplyIconPalette("Warning");
+    }
+
+    public void ConfigureForSummary(
+        string title,
+        IEnumerable<string> lines,
+        string buttonText,
+        SummaryTone tone)
+    {
+        Title = title;
+        HeaderTextBlock.Text = title;
+        DetailsItemsControl.ItemsSource = lines.ToList();
+        QuestionTextBlock.Text = "";
+        QuestionTextBlock.Visibility = Visibility.Collapsed;
+        SecondaryButton.Visibility = Visibility.Collapsed;
+        PrimaryButton.Content = buttonText;
+
+        // Informação (azul), aviso (âmbar) ou erro (vermelho), conforme o resultado.
+        (IconGlyphText.Text, var palette) = tone switch
+        {
+            SummaryTone.Warning => ("\uE7BA", "Warning"),
+            SummaryTone.Error => ("\uEA39", "Danger"),
+            _ => ("\uE946", "Info")
+        };
+        ApplyIconPalette(palette);
+    }
+
+    private void OnBodyMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        // Sem barra de título, a caixa é arrastada pelo próprio corpo.
+        if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+            DragMove();
     }
 
     private void ApplyIconPalette(string palette)

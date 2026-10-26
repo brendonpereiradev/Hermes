@@ -520,9 +520,9 @@ public partial class MainViewModel : ObservableObject
             var confirmedMismatch = !Targets.Any(t => t.State == TargetMachineState.PrinterIdentityUnknown);
             await _dialogService.ShowPrinterIdentityBlockAsync(distinctIdentityBlockReasons, confirmedMismatch);
         }
-        else if (!string.IsNullOrEmpty(LastSummaryText) && Application.Current is not null)
+        else if (!string.IsNullOrEmpty(LastSummaryText))
         {
-            MessageBox.Show(LastSummaryText, UiStrings.Main_SummaryDialogTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+            await _dialogService.ShowSummaryAsync(UiStrings.Main_SummaryDialogTitle, LastSummaryText, SummaryTone.Info);
         }
     }
 

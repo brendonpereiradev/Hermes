@@ -19,10 +19,13 @@
                 <ResourceDictionary Source="Strings/Settings.pt-BR.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Bahnschrift (vem com o Windows) faz o papel do Barlow Condensed do Talos: marca, títulos e números. -->
+            <!--
+              Três papéis de fonte: Segoe UI (padrão do WPF UI) em toda a interface; Bahnschrift só no
+              nome HERMES; Consolas nos dados que se digitam ou leem como valor (nome de computador, IP,
+              log) e no slogan da marca. Consolas vem em todo Windows, ao contrário da Cascadia Mono.
+            -->
             <FontFamily x:Key="AppDisplayFontFamily">Bahnschrift</FontFamily>
-            <!-- Fonte só para dados: IP, nome de computador, log. -->
-            <FontFamily x:Key="AppMonoFontFamily">Cascadia Mono, Consolas, Courier New</FontFamily>
+            <FontFamily x:Key="AppMonoFontFamily">Consolas, Courier New</FontFamily>
 
             <Style TargetType="DataGrid">
                 <Setter Property="CanUserReorderColumns" Value="False"/>
@@ -35,6 +38,18 @@
                 <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
                 <Setter Property="MouseOverBackground" Value="{DynamicResource AppSurfaceHoverBrush}"/>
                 <Setter Property="Padding" Value="12,8"/>
+            </Style>
+
+            <!-- Ferramenta da barra de título (tema, configurações): mesma caixa dos botões da janela (ver HermesWindow). -->
+            <Style x:Key="TitleBarToolButtonStyle" TargetType="ui:Button" BasedOn="{StaticResource ToolButtonStyle}">
+                <Setter Property="Width" Value="44"/>
+                <Setter Property="Height" Value="48"/>
+                <Setter Property="MinHeight" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
             </Style>
 
             <!--

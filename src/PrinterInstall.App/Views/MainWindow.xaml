@@ -23,6 +23,7 @@
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:TargetMachineStateToBrushConverter x:Key="StateBrushConverter"/>
         <conv:CountToStarGridLengthConverter x:Key="CountToStar"/>
+        <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="EmptyToVis"/>
 
         <!-- Pincéis para neutralizar seleção azul padrão do WPF -->
         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
@@ -49,11 +50,10 @@
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
-        <!-- Números de destaque na fonte da marca, como o .num do Talos. -->
+        <!-- Contadores em destaque: mesma fonte da interface, só mais pesada. -->
         <Style x:Key="FigureTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppDisplayFontFamily}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
         </Style>
@@ -186,10 +186,7 @@
 
         <ui:TitleBar Grid.Row="0">
             <ui:TitleBar.TrailingContent>
-                <ui:Button Style="{StaticResource ToolButtonStyle}"
-                           Padding="10,6"
-                           Margin="0,0,4,0"
-                           VerticalAlignment="Center"
+                <ui:Button Style="{StaticResource TitleBarToolButtonStyle}"
                            Command="{Binding ToggleThemeCommand}">
                     <ui:Button.ToolTip>
                         <TextBlock>
@@ -308,14 +305,23 @@
                                            Style="{StaticResource OutlineButtonStyle}"
                                            Padding="10,5"/>
                             </Grid>
-                            <ui:TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
-                                        PlaceholderText="{DynamicResource Main_ComputersPlaceholder}"
-                                        AcceptsReturn="True"
-                                        FontFamily="{StaticResource AppMonoFontFamily}"
-                                        FontSize="13"
-                                        TextWrapping="Wrap"
-                                        VerticalScrollBarVisibility="Auto"
-                                        VerticalContentAlignment="Top"/>
+                            <!-- Nomes digitados em Consolas; a instrução, na fonte da interface (o placeholder do WPF UI herdaria a Consolas). -->
+                            <Grid>
+                                <ui:TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
+                                            AcceptsReturn="True"
+                                            FontFamily="{StaticResource AppMonoFontFamily}"
+                                            FontSize="13"
+                                            Padding="12,10"
+                                            TextWrapping="Wrap"
+                                            VerticalScrollBarVisibility="Auto"
+                                            VerticalContentAlignment="Top"/>
+                                <TextBlock Text="{DynamicResource Main_ComputersPlaceholder}"
+                                           Margin="15,11,12,0"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource TextControlPlaceholderForeground}"
+                                           IsHitTestVisible="False"
+                                           Visibility="{Binding ComputersText, Converter={StaticResource EmptyToVis}}"/>
+                            </Grid>
                         </DockPanel>
                     </Border>
 
@@ -363,7 +369,8 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerNameDisplay}" Width="*" MinWidth="130" ElementStyle="{StaticResource StatusMonoTextElementStyle}"/>
                                         <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="140" ElementStyle="{StaticResource StatusSecondaryTextElementStyle}"/>
-                                        <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="170">
+                                        <!-- Largura do estado mais longo ("Identificação inconclusiva") com o ponto e o espaçamento da célula. -->
+                                        <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="220" MinWidth="220">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <!-- Ponto colorido e texto, sem etiqueta: cor só para o estado, como no Talos. -->
@@ -373,6 +380,7 @@
                                                                  VerticalAlignment="Center"
                                                                  Fill="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Dot}"/>
                                                         <TextBlock Text="{Binding StateDisplay}"
+                                                                   ToolTip="{Binding StateDisplay}"
                                                                    FontSize="13"
                                                                    FontWeight="Medium"
                                                                    VerticalAlignment="Center"

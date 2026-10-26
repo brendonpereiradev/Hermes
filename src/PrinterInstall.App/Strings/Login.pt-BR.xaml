@@ -8,7 +8,8 @@
   <sys:String x:Key="Login_PasswordLabel">Senha</sys:String>
   <sys:String x:Key="Login_PasswordPlaceholder">Digite sua senha de rede</sys:String>
   <sys:String x:Key="Login_SignInButton">Entrar</sys:String>
-  <sys:String x:Key="Login_SigningInButton">Autenticando...</sys:String>
+  <sys:String x:Key="Login_CancelSignInButton">Cancelar</sys:String>
+  <sys:String x:Key="Login_CancelSignInToolTip">Autenticando no domínio. Clique ou pressione Esc para cancelar.</sys:String>
   <sys:String x:Key="Login_RememberMeLabel">Lembrar-me</sys:String>
   <sys:String x:Key="Login_ThemeToggle_DarkToolTip">Alternar para modo escuro</sys:String>
   <sys:String x:Key="Login_ThemeToggle_LightToolTip">Alternar para modo claro</sys:String>

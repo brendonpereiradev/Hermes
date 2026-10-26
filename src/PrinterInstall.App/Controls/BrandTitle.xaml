@@ -5,6 +5,7 @@
              xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
              x:Name="Root"
              IsHitTestVisible="False"
+             UseLayoutRounding="True"
              Focusable="False"
              IsTabStop="False">
     <UserControl.Resources>
@@ -21,10 +22,15 @@
                                       FontSize="16"
                                       FontWeight="SemiBold"
                                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-        <!-- Sem subtítulo (janela principal), a marca fica só com o nome. -->
+        <!--
+          Sem subtítulo (janela principal), a marca fica só com o nome.
+          A margem de baixo sobe o subtítulo até a linha de base do HERMES: Segoe UI 13 e
+          Bahnschrift 16 têm alturas de linha diferentes, e centralizar as caixas deixava o
+          subtítulo 1 px abaixo do pé das letras do nome.
+        -->
         <TextBlock Text="{Binding Subtitle, ElementName=Root}"
                    Visibility="{Binding Subtitle, ElementName=Root, Converter={StaticResource StringToVis}, ConverterParameter=Invert}"
-                   Margin="8,1,0,0"
+                   Margin="9,0,0,2"
                    VerticalAlignment="Center"
                    FontSize="13"
                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
