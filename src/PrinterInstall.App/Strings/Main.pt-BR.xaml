@@ -2,7 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Main_WindowTitle">Hermes</sys:String>
-  <sys:String x:Key="Main_WindowSubtitle">Implantação de impressoras</sys:String>
   <sys:String x:Key="Main_ComputersLabel">Computadores alvo</sys:String>
   <sys:String x:Key="Main_ComputersPlaceholder">Um nome por linha, ex.: PC-RECEPCAO-01</sys:String>
   <sys:String x:Key="Main_ComputersCountOne">computador</sys:String>
