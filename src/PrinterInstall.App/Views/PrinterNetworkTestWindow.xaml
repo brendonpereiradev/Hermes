@@ -1,7 +1,8 @@
-<ui:FluentWindow x:Class="PrinterInstall.App.Views.PrinterNetworkTestWindow"
+<appControls:HermesWindow x:Class="PrinterInstall.App.Views.PrinterNetworkTestWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         Title="{DynamicResource NetworkTest_WindowTitle}"
@@ -11,21 +12,23 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica"
+        WindowBackdropType="None"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
         TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
-    <ui:FluentWindow.Resources>
+    <appControls:HermesWindow.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
-    </ui:FluentWindow.Resources>
+    </appControls:HermesWindow.Resources>
     <StackPanel>
-    <ui:TitleBar Title="{DynamicResource NetworkTest_WindowTitle}"
-                 ShowMaximize="False"
-                 ShowMinimize="False">
-        <ui:TitleBar.Icon>
-            <ui:ImageIcon Source="pack://application:,,,/Assets/app.png"/>
-        </ui:TitleBar.Icon>
-    </ui:TitleBar>
+    <Grid>
+        <ui:TitleBar ShowMaximize="False"
+                     ShowMinimize="False"/>
+        <appControls:BrandTitle Margin="16,0,0,0"
+                                HorizontalAlignment="Left"
+                                Subtitle="{DynamicResource NetworkTest_WindowTitle}"
+                                IsAnimating="{Binding IsRunning}"/>
+    </Grid>
     <Grid Margin="20,8,20,20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -85,14 +88,14 @@
                     Margin="0,6,0,0">
             <ui:Button Content="{DynamicResource NetworkTest_RunButton}"
                        Command="{Binding RunTestCommand}"
-                       Appearance="Primary"
+                       Style="{StaticResource PrimaryActionButtonStyle}"
                        Padding="16,6"
                        Margin="0,0,8,0"/>
             <ui:Button Content="{DynamicResource NetworkTest_CloseButton}"
                        IsCancel="True"
                        Padding="16,6"
-                       Appearance="Secondary"/>
+                       Style="{StaticResource OutlineButtonStyle}"/>
         </StackPanel>
     </Grid>
     </StackPanel>
-</ui:FluentWindow>
+</appControls:HermesWindow>

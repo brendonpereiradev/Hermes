@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <sys:String x:Key="Settings_WindowTitle">Configurações de domínio e rede</sys:String>
   <sys:String x:Key="Settings_Header">Configurações de domínio e rede</sys:String>
-  <sys:String x:Key="Settings_Hint">Configure o domínio padrão e parâmetros de rede para que o PrinterInstall funcione no seu ambiente.</sys:String>
+  <sys:String x:Key="Settings_Hint">Configure o domínio padrão e parâmetros de rede para que o Hermes funcione no seu ambiente.</sys:String>
   <sys:String x:Key="Settings_DomainLabel">Domínio padrão</sys:String>
   <sys:String x:Key="Settings_DomainHint">Exemplo: empresa.test ou EMPRESA</sys:String>
   <sys:String x:Key="Settings_DetectDomainButton">Detectar domínio</sys:String>

@@ -1,6 +1,6 @@
-# PrinterInstall: documentação
+# Hermes: documentação
 
-Guia de uso do PrinterInstall 1.5.5 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do Hermes (antigo PrinterInstall) 1.5.5 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Também disponível em [PDF](Documenta%C3%A7%C3%A3o.pdf).
 
@@ -20,7 +20,7 @@ Também disponível em [PDF](Documenta%C3%A7%C3%A3o.pdf).
 
 ## 1. Visão geral
 
-O PrinterInstall instala e padroniza impressoras de rede e etiquetadoras térmicas em estações Windows, na própria máquina ou em computadores remotos. Em uma única execução ele:
+O Hermes instala e padroniza impressoras de rede e etiquetadoras térmicas em estações Windows, na própria máquina ou em computadores remotos. Em uma única execução ele:
 
 - identifica a impressora no IP informado e bloqueia a instalação se o modelo real não corresponder ao selecionado;
 - instala o driver homologado para a marca escolhida;
@@ -64,7 +64,7 @@ Séries antigas com recursos limitados no driver (MS/MX/CS/CX 310–910, E, T, X
 
 ### Usando o executável
 
-Baixe `Printer Install.exe` na página de releases do repositório e copie-o para uma pasta local. O arquivo é único e não exige instalação. Para operar na própria máquina, abra com o botão direito e escolha **Executar como administrador**.
+Baixe `Hermes.exe` na página de releases do repositório e copie-o para uma pasta local. O arquivo é único e não exige instalação. Para operar na própria máquina, abra com o botão direito e escolha **Executar como administrador**.
 
 ### Compilando a partir do código-fonte
 
@@ -87,7 +87,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -C
 
 ## 3. Login e configuração de domínio
 
-<p align="center"><img src="screenshots/login.png" alt="Tela Entrar no domínio" width="45%" /></p>
+<p align="center"><img src="screenshots/login.png" alt="Tela de login" width="45%" /></p>
 
 Informe seu usuário e senha de rede e clique em **Entrar**. O campo Usuário aceita:
 

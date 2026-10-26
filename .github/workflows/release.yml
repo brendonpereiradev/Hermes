@@ -69,7 +69,7 @@ jobs:
       - name: Verify published executable
         shell: powershell
         run: |
-          $exePath = "publish\PrinterInstall\Printer Install.exe"
+          $exePath = "publish\PrinterInstall\Hermes.exe"
           if (-not (Test-Path $exePath)) {
             Write-Error "O executável '$exePath' não foi encontrado após o build."
             exit 1
@@ -79,12 +79,12 @@ jobs:
           Write-Host "Executável gerado com sucesso: $exePath"
           Write-Host "Tamanho: $([math]::Round($size, 2)) MB"
           Write-Host "SHA256: $hash"
-          "$hash  Printer.Install.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
+          "$hash  Hermes.exe" | Out-File -FilePath "publish\PrinterInstall\checksums-sha256.txt" -Encoding utf8
 
       - name: Check executable before upload
         shell: pwsh
         run: |
-          python scripts/Test-PublicData.py --artifact 'publish/PrinterInstall/Printer Install.exe'
+          python scripts/Test-PublicData.py --artifact 'publish/PrinterInstall/Hermes.exe'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           ./scripts/Test-Secrets.ps1 -ArtifactPath 'publish/PrinterInstall'
 
@@ -93,7 +93,7 @@ jobs:
         with:
           name: release-files
           path: |
-            publish/PrinterInstall/Printer Install.exe
+            publish/PrinterInstall/Hermes.exe
             publish/PrinterInstall/checksums-sha256.txt
           if-no-files-found: error
           retention-days: 7
@@ -120,7 +120,7 @@ jobs:
           tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
           name: Release ${{ github.event.inputs.tag_name || github.ref_name }}
           files: |
-            release-files/Printer Install.exe
+            release-files/Hermes.exe
             release-files/checksums-sha256.txt
           generate_release_notes: true
           draft: false

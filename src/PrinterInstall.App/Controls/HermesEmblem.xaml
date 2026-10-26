@@ -1,0 +1,44 @@
+<UserControl x:Class="PrinterInstall.App.Controls.HermesEmblem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="22" Height="22"
+             Focusable="False"
+             IsTabStop="False"
+             AutomationProperties.Name="Hermes">
+    <!-- Desenho de Themes/Brand.xaml (versão pequena) em formas separadas, para a asa e as linhas poderem se mover. -->
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="128" Height="128" ClipToBounds="False">
+            <Rectangle Width="128" Height="128" RadiusX="28" RadiusY="28" Fill="{StaticResource HermesTileBrush}"/>
+            <Canvas x:Name="FlightLayer">
+                <Canvas.RenderTransform>
+                    <TranslateTransform x:Name="FlightOffset"/>
+                </Canvas.RenderTransform>
+                <Path Data="M56,28 H86 L98,40 V100 H56 Z" Fill="{StaticResource HermesSheetBrush}"/>
+                <Path Data="M65,54 H89" Stroke="{StaticResource HermesCyanBrush}" StrokeThickness="8"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.RenderTransform>
+                        <ScaleTransform x:Name="CyanInk" CenterX="65"/>
+                    </Path.RenderTransform>
+                </Path>
+                <Path Data="M65,68 H89" Stroke="{StaticResource HermesMagentaBrush}" StrokeThickness="8"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.RenderTransform>
+                        <ScaleTransform x:Name="MagentaInk" CenterX="65"/>
+                    </Path.RenderTransform>
+                </Path>
+                <Path Data="M65,82 H81" Stroke="{StaticResource HermesYellowBrush}" StrokeThickness="8"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.RenderTransform>
+                        <ScaleTransform x:Name="YellowInk" CenterX="65"/>
+                    </Path.RenderTransform>
+                </Path>
+                <Path Data="M56,50 C44,48 30,40 20,28 M56,68 C44,67 34,62 24,54" Stroke="{StaticResource HermesWingBrush}"
+                      StrokeThickness="9" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.RenderTransform>
+                        <RotateTransform x:Name="WingBeat" CenterX="56" CenterY="60"/>
+                    </Path.RenderTransform>
+                </Path>
+            </Canvas>
+        </Canvas>
+    </Viewbox>
+</UserControl>

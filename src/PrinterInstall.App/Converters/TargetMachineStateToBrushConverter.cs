@@ -5,59 +5,45 @@ using PrinterInstall.Core.Models;
 
 namespace PrinterInstall.App.Converters;
 
+/// <summary>
+/// Cor de cada estado da implantação. O parâmetro escolhe o papel: "Dot" (ponto de status),
+/// "Foreground" (texto), "Border" ou fundo (padrão), nos tons do Talos (escuro) e do Hefesto (claro).
+/// </summary>
 public sealed class TargetMachineStateToBrushConverter : IValueConverter
 {
     public static bool IsDarkTheme { get; set; }
 
-    // Pinceis Tema Claro (Light Mode)
-    private static readonly SolidColorBrush LightPendingBackground = CreateBrush("#FFF1F5F9");
-    private static readonly SolidColorBrush LightPendingBorder = CreateBrush("#FFCBD5E1");
-    private static readonly SolidColorBrush LightPendingForeground = CreateBrush("#FF475569");
+    private enum Tone
+    {
+        Pending,
+        Active,
+        Success,
+        Warning,
+        Error,
+        RolledBack
+    }
 
-    private static readonly SolidColorBrush LightActiveBackground = CreateBrush("#FFE5F2FF");
-    private static readonly SolidColorBrush LightActiveBorder = CreateBrush("#FF7AB6F0");
-    private static readonly SolidColorBrush LightActiveForeground = CreateBrush("#FF0C4A8A");
+    private sealed record Palette(SolidColorBrush Background, SolidColorBrush Border, SolidColorBrush Foreground, SolidColorBrush Dot);
 
-    private static readonly SolidColorBrush LightSuccessBackground = CreateBrush("#FFE7F6EC");
-    private static readonly SolidColorBrush LightSuccessBorder = CreateBrush("#FF87C79B");
-    private static readonly SolidColorBrush LightSuccessForeground = CreateBrush("#FF1F6B35");
+    private static readonly Dictionary<Tone, Palette> LightPalettes = new()
+    {
+        [Tone.Pending] = CreatePalette("#FFF1F4F8", "#FFC9D2DE", "#FF465569", "#FF9AA7B8"),
+        [Tone.Active] = CreatePalette("#FFEBF2FD", "#FFA9C3F2", "#FF2155B3", "#FF2F6FE0"),
+        [Tone.Success] = CreatePalette("#FFEAF6EF", "#FFA6D4B6", "#FF1F8A50", "#FF22A35E"),
+        [Tone.Warning] = CreatePalette("#FFFCF5E8", "#FFE3C584", "#FF8F5410", "#FFD08A1E"),
+        [Tone.Error] = CreatePalette("#FFFCEEEE", "#FFEBB2B2", "#FFC23636", "#FFD94848"),
+        [Tone.RolledBack] = CreatePalette("#FFE8F4F2", "#FF9ACFC7", "#FF16736B", "#FF1A9A8E")
+    };
 
-    private static readonly SolidColorBrush LightWarningBackground = CreateBrush("#FFFFF4E5");
-    private static readonly SolidColorBrush LightWarningBorder = CreateBrush("#FFE2BD7A");
-    private static readonly SolidColorBrush LightWarningForeground = CreateBrush("#FF8A5A00");
-
-    private static readonly SolidColorBrush LightErrorBackground = CreateBrush("#FFFCE8E8");
-    private static readonly SolidColorBrush LightErrorBorder = CreateBrush("#FFE59A9A");
-    private static readonly SolidColorBrush LightErrorForeground = CreateBrush("#FF8C1D1D");
-
-    private static readonly SolidColorBrush LightRolledBackBackground = CreateBrush("#FFE0F2F1");
-    private static readonly SolidColorBrush LightRolledBackBorder = CreateBrush("#FF4DB6AC");
-    private static readonly SolidColorBrush LightRolledBackForeground = CreateBrush("#FF004D40");
-
-    // Pinceis Tema Escuro (Dark Mode - Alto Contraste WCAG AAA e Elevação Zinc)
-    private static readonly SolidColorBrush DarkPendingBackground = CreateBrush("#FF1C1C20");
-    private static readonly SolidColorBrush DarkPendingBorder = CreateBrush("#FF323238");
-    private static readonly SolidColorBrush DarkPendingForeground = CreateBrush("#FFA1A1AA");
-
-    private static readonly SolidColorBrush DarkActiveBackground = CreateBrush("#FF0F2137");
-    private static readonly SolidColorBrush DarkActiveBorder = CreateBrush("#FF1D4ED8");
-    private static readonly SolidColorBrush DarkActiveForeground = CreateBrush("#FF60A5FA");
-
-    private static readonly SolidColorBrush DarkSuccessBackground = CreateBrush("#FF0D2818");
-    private static readonly SolidColorBrush DarkSuccessBorder = CreateBrush("#FF166534");
-    private static readonly SolidColorBrush DarkSuccessForeground = CreateBrush("#FF4ADE80");
-
-    private static readonly SolidColorBrush DarkWarningBackground = CreateBrush("#FF291C0E");
-    private static readonly SolidColorBrush DarkWarningBorder = CreateBrush("#FF92400E");
-    private static readonly SolidColorBrush DarkWarningForeground = CreateBrush("#FFFBBF24");
-
-    private static readonly SolidColorBrush DarkErrorBackground = CreateBrush("#FF2D1214");
-    private static readonly SolidColorBrush DarkErrorBorder = CreateBrush("#FF991B1B");
-    private static readonly SolidColorBrush DarkErrorForeground = CreateBrush("#FFF87171");
-
-    private static readonly SolidColorBrush DarkRolledBackBackground = CreateBrush("#FF0E2524");
-    private static readonly SolidColorBrush DarkRolledBackBorder = CreateBrush("#FF115E59");
-    private static readonly SolidColorBrush DarkRolledBackForeground = CreateBrush("#FF2DD4BF");
+    private static readonly Dictionary<Tone, Palette> DarkPalettes = new()
+    {
+        [Tone.Pending] = CreatePalette("#FF181C23", "#FF333B47", "#FF98A2B0", "#FF7A8494"),
+        [Tone.Active] = CreatePalette("#FF15213A", "#FF2E4A73", "#FF8DB5FA", "#FF4C8DF6"),
+        [Tone.Success] = CreatePalette("#FF132620", "#FF225C44", "#FF3DD68C", "#FF3DD68C"),
+        [Tone.Warning] = CreatePalette("#FF282418", "#FF6E5A26", "#FFF2C14E", "#FFF2C14E"),
+        [Tone.Error] = CreatePalette("#FF2A181C", "#FF7A3337", "#FFFF9A97", "#FFF0605D"),
+        [Tone.RolledBack] = CreatePalette("#FF0E2524", "#FF115E59", "#FF2DD4BF", "#FF2DD4BF")
+    };
 
     private static bool ResolveIsDarkTheme()
     {
@@ -74,169 +60,44 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         var state = value is TargetMachineState s ? s : TargetMachineState.Pending;
-        var role = parameter?.ToString();
-        var isDark = ResolveIsDarkTheme();
+        var palette = (ResolveIsDarkTheme() ? DarkPalettes : LightPalettes)[ToneOf(state)];
 
-        return role switch
+        return parameter?.ToString() switch
         {
-            "Border" => GetBorderBrush(state, isDark),
-            "Foreground" => GetForegroundBrush(state, isDark),
-            _ => GetBackgroundBrush(state, isDark)
+            "Border" => palette.Border,
+            "Foreground" => palette.Foreground,
+            "Dot" => palette.Dot,
+            _ => palette.Background
         };
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 
-    private static Brush GetBackgroundBrush(TargetMachineState state, bool isDark)
+    private static Tone ToneOf(TargetMachineState state) => state switch
     {
-        if (isDark)
-        {
-            return state switch
-            {
-                TargetMachineState.CompletedSuccess => DarkSuccessBackground,
-                TargetMachineState.SkippedAlreadyExists => DarkWarningBackground,
-                TargetMachineState.AbortedDriverMissing => DarkErrorBackground,
-                TargetMachineState.Error => DarkErrorBackground,
-                TargetMachineState.PrinterIdentityMismatch => DarkErrorBackground,
-                TargetMachineState.PrinterIdentityUnknown => DarkErrorBackground,
-                TargetMachineState.IdentifyingPrinter => DarkActiveBackground,
-                TargetMachineState.ValidatingPrinter => DarkActiveBackground,
-                TargetMachineState.ContactingRemote => DarkActiveBackground,
-                TargetMachineState.ValidatingDriver => DarkActiveBackground,
-                TargetMachineState.InstallingDriver => DarkActiveBackground,
-                TargetMachineState.DriverInstalledReconfirming => DarkActiveBackground,
-                TargetMachineState.Configuring => DarkActiveBackground,
-                TargetMachineState.DeployCancelled => DarkWarningBackground,
-                TargetMachineState.RollbackRemovingQueue => DarkActiveBackground,
-                TargetMachineState.RollbackRemovingPort => DarkActiveBackground,
-                TargetMachineState.RolledBack => DarkRolledBackBackground,
-                _ => DarkPendingBackground
-            };
-        }
+        TargetMachineState.CompletedSuccess => Tone.Success,
+        TargetMachineState.SkippedAlreadyExists => Tone.Warning,
+        TargetMachineState.DeployCancelled => Tone.Warning,
+        TargetMachineState.AbortedDriverMissing => Tone.Error,
+        TargetMachineState.Error => Tone.Error,
+        TargetMachineState.PrinterIdentityMismatch => Tone.Error,
+        TargetMachineState.PrinterIdentityUnknown => Tone.Error,
+        TargetMachineState.IdentifyingPrinter => Tone.Active,
+        TargetMachineState.ValidatingPrinter => Tone.Active,
+        TargetMachineState.ContactingRemote => Tone.Active,
+        TargetMachineState.ValidatingDriver => Tone.Active,
+        TargetMachineState.InstallingDriver => Tone.Active,
+        TargetMachineState.DriverInstalledReconfirming => Tone.Active,
+        TargetMachineState.Configuring => Tone.Active,
+        TargetMachineState.RollbackRemovingQueue => Tone.Active,
+        TargetMachineState.RollbackRemovingPort => Tone.Active,
+        TargetMachineState.RolledBack => Tone.RolledBack,
+        _ => Tone.Pending
+    };
 
-        return state switch
-        {
-            TargetMachineState.CompletedSuccess => LightSuccessBackground,
-            TargetMachineState.SkippedAlreadyExists => LightWarningBackground,
-            TargetMachineState.AbortedDriverMissing => LightErrorBackground,
-            TargetMachineState.Error => LightErrorBackground,
-            TargetMachineState.PrinterIdentityMismatch => LightErrorBackground,
-            TargetMachineState.PrinterIdentityUnknown => LightErrorBackground,
-            TargetMachineState.IdentifyingPrinter => LightActiveBackground,
-            TargetMachineState.ValidatingPrinter => LightActiveBackground,
-            TargetMachineState.ContactingRemote => LightActiveBackground,
-            TargetMachineState.ValidatingDriver => LightActiveBackground,
-            TargetMachineState.InstallingDriver => LightActiveBackground,
-            TargetMachineState.DriverInstalledReconfirming => LightActiveBackground,
-            TargetMachineState.Configuring => LightActiveBackground,
-            TargetMachineState.DeployCancelled => LightWarningBackground,
-            TargetMachineState.RollbackRemovingQueue => LightActiveBackground,
-            TargetMachineState.RollbackRemovingPort => LightActiveBackground,
-            TargetMachineState.RolledBack => LightRolledBackBackground,
-            _ => LightPendingBackground
-        };
-    }
-
-    private static Brush GetBorderBrush(TargetMachineState state, bool isDark)
-    {
-        if (isDark)
-        {
-            return state switch
-            {
-                TargetMachineState.CompletedSuccess => DarkSuccessBorder,
-                TargetMachineState.SkippedAlreadyExists => DarkWarningBorder,
-                TargetMachineState.AbortedDriverMissing => DarkErrorBorder,
-                TargetMachineState.Error => DarkErrorBorder,
-                TargetMachineState.PrinterIdentityMismatch => DarkErrorBorder,
-                TargetMachineState.PrinterIdentityUnknown => DarkErrorBorder,
-                TargetMachineState.IdentifyingPrinter => DarkActiveBorder,
-                TargetMachineState.ValidatingPrinter => DarkActiveBorder,
-                TargetMachineState.ContactingRemote => DarkActiveBorder,
-                TargetMachineState.ValidatingDriver => DarkActiveBorder,
-                TargetMachineState.InstallingDriver => DarkActiveBorder,
-                TargetMachineState.DriverInstalledReconfirming => DarkActiveBorder,
-                TargetMachineState.Configuring => DarkActiveBorder,
-                TargetMachineState.DeployCancelled => DarkWarningBorder,
-                TargetMachineState.RollbackRemovingQueue => DarkActiveBorder,
-                TargetMachineState.RollbackRemovingPort => DarkActiveBorder,
-                TargetMachineState.RolledBack => DarkRolledBackBorder,
-                _ => DarkPendingBorder
-            };
-        }
-
-        return state switch
-        {
-            TargetMachineState.CompletedSuccess => LightSuccessBorder,
-            TargetMachineState.SkippedAlreadyExists => LightWarningBorder,
-            TargetMachineState.AbortedDriverMissing => LightErrorBorder,
-            TargetMachineState.Error => LightErrorBorder,
-            TargetMachineState.PrinterIdentityMismatch => LightErrorBorder,
-            TargetMachineState.PrinterIdentityUnknown => LightErrorBorder,
-            TargetMachineState.IdentifyingPrinter => LightActiveBorder,
-            TargetMachineState.ValidatingPrinter => LightActiveBorder,
-            TargetMachineState.ContactingRemote => LightActiveBorder,
-            TargetMachineState.ValidatingDriver => LightActiveBorder,
-            TargetMachineState.InstallingDriver => LightActiveBorder,
-            TargetMachineState.DriverInstalledReconfirming => LightActiveBorder,
-            TargetMachineState.Configuring => LightActiveBorder,
-            TargetMachineState.DeployCancelled => LightWarningBorder,
-            TargetMachineState.RollbackRemovingQueue => LightActiveBorder,
-            TargetMachineState.RollbackRemovingPort => LightActiveBorder,
-            TargetMachineState.RolledBack => LightRolledBackBorder,
-            _ => LightPendingBorder
-        };
-    }
-
-    private static Brush GetForegroundBrush(TargetMachineState state, bool isDark)
-    {
-        if (isDark)
-        {
-            return state switch
-            {
-                TargetMachineState.CompletedSuccess => DarkSuccessForeground,
-                TargetMachineState.SkippedAlreadyExists => DarkWarningForeground,
-                TargetMachineState.AbortedDriverMissing => DarkErrorForeground,
-                TargetMachineState.Error => DarkErrorForeground,
-                TargetMachineState.PrinterIdentityMismatch => DarkErrorForeground,
-                TargetMachineState.PrinterIdentityUnknown => DarkErrorForeground,
-                TargetMachineState.IdentifyingPrinter => DarkActiveForeground,
-                TargetMachineState.ValidatingPrinter => DarkActiveForeground,
-                TargetMachineState.ContactingRemote => DarkActiveForeground,
-                TargetMachineState.ValidatingDriver => DarkActiveForeground,
-                TargetMachineState.InstallingDriver => DarkActiveForeground,
-                TargetMachineState.DriverInstalledReconfirming => DarkActiveForeground,
-                TargetMachineState.Configuring => DarkActiveForeground,
-                TargetMachineState.DeployCancelled => DarkWarningForeground,
-                TargetMachineState.RollbackRemovingQueue => DarkActiveForeground,
-                TargetMachineState.RollbackRemovingPort => DarkActiveForeground,
-                TargetMachineState.RolledBack => DarkRolledBackForeground,
-                _ => DarkPendingForeground
-            };
-        }
-
-        return state switch
-        {
-            TargetMachineState.CompletedSuccess => LightSuccessForeground,
-            TargetMachineState.SkippedAlreadyExists => LightWarningForeground,
-            TargetMachineState.AbortedDriverMissing => LightErrorForeground,
-            TargetMachineState.Error => LightErrorForeground,
-            TargetMachineState.PrinterIdentityMismatch => LightErrorForeground,
-            TargetMachineState.PrinterIdentityUnknown => LightErrorForeground,
-            TargetMachineState.IdentifyingPrinter => LightActiveForeground,
-            TargetMachineState.ValidatingPrinter => LightActiveForeground,
-            TargetMachineState.ContactingRemote => LightActiveForeground,
-            TargetMachineState.ValidatingDriver => LightActiveForeground,
-            TargetMachineState.InstallingDriver => LightActiveForeground,
-            TargetMachineState.DriverInstalledReconfirming => LightActiveForeground,
-            TargetMachineState.Configuring => LightActiveForeground,
-            TargetMachineState.DeployCancelled => LightWarningForeground,
-            TargetMachineState.RollbackRemovingQueue => LightActiveForeground,
-            TargetMachineState.RollbackRemovingPort => LightActiveForeground,
-            TargetMachineState.RolledBack => LightRolledBackForeground,
-            _ => LightPendingForeground
-        };
-    }
+    private static Palette CreatePalette(string background, string border, string foreground, string dot) =>
+        new(CreateBrush(background), CreateBrush(border), CreateBrush(foreground), CreateBrush(dot));
 
     private static SolidColorBrush CreateBrush(string colorHex)
     {

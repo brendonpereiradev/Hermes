@@ -76,7 +76,7 @@ public class DirectRawPrinterTestPageBuilderTests
         Assert.NotEmpty(payload);
         Assert.StartsWith("SIZE 25 mm, 270 mm", text);
         Assert.Contains("PRINT 1,1", text);
-        Assert.Contains("Printer Install", text);
+        Assert.Contains("Hermes", text);
         Assert.Contains("BOX", text);
     }
 

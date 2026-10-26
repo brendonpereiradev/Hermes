@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text;
 using System.Windows;
@@ -75,10 +76,50 @@ public partial class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(CanRemovePrinterRow));
             RemovePrinterRowCommand.NotifyCanExecuteChanged();
         };
-        Targets.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowStatusEmptyHint));
+        Targets.CollectionChanged += OnTargetsChanged;
     }
 
     public bool ShowStatusEmptyHint => Targets.Count == 0;
+
+    public int StatusTargetCount => Targets.Count;
+
+    public int StatusSucceededCount => DeploymentTargetRows.CountOutcomes(Targets).Succeeded;
+
+    public int StatusFailedCount => DeploymentTargetRows.CountOutcomes(Targets).Failed;
+
+    /// <summary>Linhas ainda sem resultado de sucesso ou falha (pendentes, em andamento, ignoradas, revertidas).</summary>
+    public int StatusOtherCount => StatusTargetCount - StatusSucceededCount - StatusFailedCount;
+
+    private void OnTargetsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems is not null)
+        {
+            foreach (TargetRowViewModel row in e.NewItems)
+                row.PropertyChanged += OnTargetRowChanged;
+        }
+        if (e.OldItems is not null)
+        {
+            foreach (TargetRowViewModel row in e.OldItems)
+                row.PropertyChanged -= OnTargetRowChanged;
+        }
+
+        OnPropertyChanged(nameof(ShowStatusEmptyHint));
+        NotifyStatusSummaryChanged();
+    }
+
+    private void OnTargetRowChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TargetRowViewModel.State))
+            NotifyStatusSummaryChanged();
+    }
+
+    private void NotifyStatusSummaryChanged()
+    {
+        OnPropertyChanged(nameof(StatusTargetCount));
+        OnPropertyChanged(nameof(StatusSucceededCount));
+        OnPropertyChanged(nameof(StatusFailedCount));
+        OnPropertyChanged(nameof(StatusOtherCount));
+    }
 
     public bool CanRemovePrinterRow => PrinterRows.Count > 1;
 

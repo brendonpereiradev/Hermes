@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using PrinterInstall.App.Controls;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -75,21 +76,29 @@ public sealed class ThemeService : IThemeService
 
             void Action()
             {
-                ApplicationThemeManager.Apply(theme, WindowBackdropType.Mica);
+                // Fundo sólido, sem Mica: as superfícies seguem a paleta do Talos/Hefesto.
+                ApplicationThemeManager.Apply(theme, WindowBackdropType.None);
 
-                var accent = theme == ApplicationTheme.Dark
-                    ? Color.FromRgb(59, 130, 246)
-                    : Color.FromRgb(37, 99, 235);
+                // Acento sem as variações automáticas do WPF UI, que clareiam o azul no tema escuro.
+                var (accent, accentText) = theme == ApplicationTheme.Dark
+                    ? (Color.FromRgb(0x4C, 0x8D, 0xF6), Color.FromRgb(0x8D, 0xB5, 0xFA))
+                    : (Color.FromRgb(0x2F, 0x6F, 0xE0), Color.FromRgb(0x21, 0x55, 0xB3));
 
-                ApplicationAccentColorManager.Apply(accent, theme);
+                ApplicationAccentColorManager.Apply(accent, accent, accent, accentText);
                 UpdateThemeTokens(theme);
 
-                // Janelas já abertas precisam reaplicar o backdrop (Mica) e a barra de título no novo tema
+                // Janelas já abertas precisam reaplicar o fundo e a barra de título no novo tema
                 foreach (Window window in Application.Current.Windows)
                 {
                     if (window is FluentWindow)
                     {
-                        WindowBackgroundManager.UpdateBackground(window, theme, WindowBackdropType.Mica);
+                        WindowBackgroundManager.UpdateBackground(window, theme, WindowBackdropType.None);
+                    }
+
+                    // O WPF UI volta a pintar o cinza do próprio tema; o fundo retorna à paleta.
+                    if (window is HermesWindow hermesWindow)
+                    {
+                        hermesWindow.UseCanvasBackground();
                     }
                 }
             }

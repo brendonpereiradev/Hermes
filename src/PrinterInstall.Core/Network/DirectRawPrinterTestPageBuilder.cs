@@ -26,7 +26,7 @@ public static class DirectRawPrinterTestPageBuilder
     {
         var lines = new[]
         {
-            "Printer Install - Pagina de teste",
+            "Hermes - Pagina de teste",
             $"Host: {host}",
             $"Data: {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
             "",
@@ -88,7 +88,7 @@ public static class DirectRawPrinterTestPageBuilder
         yield return $"BOX {boxRight},{boxBottom},{margin},{margin},3";
         yield return $"TEXT {x},{boxBottom - lineGap},\"3\",{TextRotation},1,1,\"TEST\"";
         yield return $"TEXT {x},{boxBottom - lineGap * 2},\"3\",{TextRotation},1,1,\"{EscapeTspl(presetLabel)}\"";
-        yield return $"TEXT {x},{boxBottom - lineGap * 3},\"3\",{TextRotation},1,1,\"Printer Install\"";
+        yield return $"TEXT {x},{boxBottom - lineGap * 3},\"3\",{TextRotation},1,1,\"Hermes\"";
         yield return $"TEXT {x},{boxBottom - lineGap * 4},\"2\",{TextRotation},1,1,\"Host: {EscapeTspl(host)}\"";
         yield return $"TEXT {x},{boxBottom - lineGap * 5},\"2\",{TextRotation},1,1,\"{EscapeTspl(timestamp)}\"";
         yield return "PRINT 1,1";
@@ -99,7 +99,7 @@ public static class DirectRawPrinterTestPageBuilder
     {
         // Pulseira: 25mm (largura = 200 dots) × 270mm (comprimento = 2160 dots).
         // Texto rotacionado 90° para correr ao longo do comprimento.
-        // Moldura generosa na área nítida (Y=600 até Y=1600) com "Printer Install"
+        // Moldura generosa na área nítida (Y=600 até Y=1600) com "Hermes"
         // perfeitamente centralizado e com escala 1:1 nativa para eliminar ranhuras bitmap.
         const int rotation = 90;
         var margin = 16;
@@ -117,8 +117,8 @@ public static class DirectRawPrinterTestPageBuilder
         // Moldura retangular dedicada e espaçosa
         yield return $"BOX {boxRight},{boxBottom},{margin},{boxTop},2";
 
-        // "Printer Install" centralizado dentro da caixa (ocupa Y=920..1280)
-        yield return $"TEXT {textX},920,\"4\",{rotation},1,1,\"Printer Install\"";
+        // "Hermes" centralizado dentro da caixa (6 letras de 24 dots: ocupa Y=1028..1172)
+        yield return $"TEXT {textX},1028,\"4\",{rotation},1,1,\"Hermes\"";
 
         yield return "PRINT 1,1";
     }

@@ -1,4 +1,6 @@
-<h1 align="center">PrinterInstall</h1>
+<p align="center">
+  <img src="docs/brand/hermes-logo-animated.svg" width="560" alt="Hermes, printer deployment">
+</p>
 
 <p align="center">
   Windows desktop application that installs and standardizes network printers and thermal label printers on workstations.
@@ -8,19 +10,19 @@
   <a href="README.md">Português</a> · <strong>English</strong>
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/login.png" alt="Authentication window" width="34%" />
-  &nbsp;
-  <img src="docs/screenshots/main.png" alt="Main deployment window" width="60%" />
-</p>
-
 ---
 
 ## About the project
 
-PrinterInstall is a .NET 8 and WPF application that automates network printer setup in corporate and hospital environments. It creates TCP/IP ports, installs drivers and configures queues on many computers remotely, without setting up each machine by hand.
+**Hermes** (the product name of PrinterInstall) is a .NET 8 and WPF application that automates network printer setup in corporate and hospital environments. It creates TCP/IP ports, installs drivers and configures queues on many computers remotely, without setting up each machine by hand.
 
 The solution has two layers: `PrinterInstall.Core` (driver catalog, LDAP authentication, orchestration and remote WMI/CIM operations) and `PrinterInstall.App` (MVVM interface built with WPF-UI). Every resource it creates is recorded in a rollback journal, and the orchestrator undoes completed steps if an installation fails or is cancelled.
+
+---
+
+## Visual rework
+
+In version 1.6.0 the project got a visual rework to match the other projects in the same scope, Talos and Hefesto. The application is now called **Hermes**, the messenger of the gods, and has its own emblem: a wing and a printed sheet in cyan, magenta and yellow. The dark theme uses Talos surfaces, the light theme uses Hefesto surfaces, and the emblem flies in the title bar while a deployment runs. The repository and projects keep the PrinterInstall name. See [Hermes brand](docs/brand/README.md) (in Portuguese).
 
 ---
 

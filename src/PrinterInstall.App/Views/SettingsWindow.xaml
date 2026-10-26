@@ -1,7 +1,8 @@
-<ui:FluentWindow x:Class="PrinterInstall.App.Views.SettingsWindow"
+<appControls:HermesWindow x:Class="PrinterInstall.App.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         Title="{DynamicResource Settings_WindowTitle}"
         Icon="pack://application:,,,/Assets/app.ico"
@@ -10,10 +11,11 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica"
+        WindowBackdropType="None"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
         TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
-    <ui:FluentWindow.Resources>
+    <appControls:HermesWindow.Resources>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
         <Style x:Key="SettingsInnerTextBoxStyle" TargetType="TextBox">
             <Setter Property="BorderThickness" Value="0"/>
@@ -23,13 +25,13 @@
             <Setter Property="Padding" Value="0,2"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-    </ui:FluentWindow.Resources>
+    </appControls:HermesWindow.Resources>
     <StackPanel>
     <ui:TitleBar Title="{DynamicResource Settings_WindowTitle}"
                  ShowMaximize="False"
                  ShowMinimize="False">
         <ui:TitleBar.Icon>
-            <ui:ImageIcon Source="pack://application:,,,/Assets/app.png"/>
+            <ui:ImageIcon Source="{StaticResource HermesEmblemSmallImage}"/>
         </ui:TitleBar.Icon>
     </ui:TitleBar>
     <Grid Margin="24,8,24,24">
@@ -91,7 +93,7 @@
                            Content="{DynamicResource Settings_DetectDomainButton}"
                            Icon="Search16"
                            Command="{Binding DetectDomainCommand}"
-                           Appearance="Secondary"
+                           Style="{StaticResource OutlineButtonStyle}"
                            Height="38"
                            Padding="12,0"/>
             </Grid>
@@ -171,21 +173,21 @@
             <ui:Button Grid.Column="0"
                        Content="{DynamicResource Settings_ResetButton}"
                        Command="{Binding ResetToDefaultsCommand}"
-                       Appearance="Secondary"/>
+                       Style="{StaticResource OutlineButtonStyle}"/>
 
             <ui:Button Grid.Column="2"
                        Content="{DynamicResource Settings_CancelButton}"
                        Click="Cancel_OnClick"
-                       Appearance="Secondary"
+                       Style="{StaticResource OutlineButtonStyle}"
                        Margin="0,0,8,0"/>
 
             <ui:Button Grid.Column="3"
                        Content="{DynamicResource Settings_SaveButton}"
                        Click="Save_OnClick"
-                       Appearance="Primary"
+                       Style="{StaticResource PrimaryActionButtonStyle}"
                        FontWeight="SemiBold"
                        IsDefault="True"/>
         </Grid>
     </Grid>
     </StackPanel>
-</ui:FluentWindow>
+</appControls:HermesWindow>

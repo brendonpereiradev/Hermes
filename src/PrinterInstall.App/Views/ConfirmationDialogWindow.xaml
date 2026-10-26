@@ -1,7 +1,8 @@
-<ui:FluentWindow x:Class="PrinterInstall.App.Views.ConfirmationDialogWindow"
+<appControls:HermesWindow x:Class="PrinterInstall.App.Views.ConfirmationDialogWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
         xmlns:conv="clr-namespace:PrinterInstall.App.Converters"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
         Icon="pack://application:,,,/Assets/app.ico"
@@ -11,13 +12,14 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
-        WindowBackdropType="Mica"
+        WindowBackdropType="None"
+        Background="{DynamicResource AppCanvasBackgroundBrush}"
         TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}"
         UseLayoutRounding="True">
-    <ui:FluentWindow.Resources>
+    <appControls:HermesWindow.Resources>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="StringToVis"/>
-    </ui:FluentWindow.Resources>
+    </appControls:HermesWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -29,7 +31,7 @@
                      ShowMaximize="False"
                      ShowMinimize="False">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Assets/app.png"/>
+                <ui:ImageIcon Source="{StaticResource HermesEmblemSmallImage}"/>
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
@@ -120,18 +122,18 @@
                         HorizontalAlignment="Right">
                 <ui:Button x:Name="SecondaryButton"
                            Content="Cancelar e corrigir"
-                           Appearance="Secondary"
+                           Style="{StaticResource OutlineButtonStyle}"
                            IsCancel="True"
                            Click="OnSecondaryButtonClick"
                            Padding="14,6"
                            Margin="0,0,8,0"/>
                 <ui:Button x:Name="PrimaryButton"
                            Content="Prosseguir mesmo assim"
-                           Appearance="Primary"
+                           Style="{StaticResource PrimaryActionButtonStyle}"
                            IsDefault="True"
                            Click="OnPrimaryButtonClick"
                            Padding="14,6"/>
             </StackPanel>
         </Grid>
     </Grid>
-</ui:FluentWindow>
+</appControls:HermesWindow>

@@ -18,8 +18,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <RootNamespace>PrinterInstall.App</RootNamespace>
-    <AssemblyTitle>Printer Install</AssemblyTitle>
-    <Product>Printer Install</Product>
+    <AssemblyTitle>Hermes</AssemblyTitle>
+    <Product>Hermes</Product>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 

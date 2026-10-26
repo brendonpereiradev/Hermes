@@ -1,4 +1,6 @@
-<h1 align="center">PrinterInstall</h1>
+<p align="center">
+  <img src="docs/brand/hermes-logo-animated.svg" width="560" alt="Hermes, implantação de impressoras">
+</p>
 
 <p align="center">
   Aplicativo desktop para Windows que instala e padroniza impressoras de rede e etiquetadoras térmicas em estações de trabalho.
@@ -8,19 +10,19 @@
   <strong>Português</strong> · <a href="README.en.md">English</a>
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/login.png" alt="Tela de autenticação" width="34%" />
-  &nbsp;
-  <img src="docs/screenshots/main.png" alt="Tela principal de implantação" width="60%" />
-</p>
-
 ---
 
 ## Sobre o projeto
 
-PrinterInstall é uma aplicação em .NET 8 e WPF que automatiza a configuração de impressoras de rede em ambientes corporativos e hospitalares. Ela cria portas TCP/IP, instala drivers e configura filas em vários computadores remotamente, sem configurar cada máquina à mão.
+O **Hermes** (nome de produto do PrinterInstall) é uma aplicação em .NET 8 e WPF que automatiza a configuração de impressoras de rede em ambientes corporativos e hospitalares. Ela cria portas TCP/IP, instala drivers e configura filas em vários computadores remotamente, sem configurar cada máquina à mão.
 
 A solução tem duas camadas: `PrinterInstall.Core` (catálogo de drivers, autenticação LDAP, orquestração e operações remotas via WMI/CIM) e `PrinterInstall.App` (interface MVVM com WPF-UI). Cada recurso criado é registrado em um diário de reversão, e o orquestrador desfaz as etapas concluídas se a instalação falhar ou for cancelada.
+
+---
+
+## Rework visual
+
+Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros projetos do mesmo escopo, o Talos e o Hefesto. O aplicativo passou a se chamar **Hermes**, o mensageiro dos deuses, e ganhou um emblema próprio com a asa e a folha impressa em ciano, magenta e amarelo. O tema escuro usa as superfícies do Talos, o tema claro as do Hefesto, e o emblema voa na barra de título enquanto uma implantação roda. O repositório e os projetos continuam com o nome PrinterInstall. Detalhes em [Marca do Hermes](docs/brand/README.md).
 
 ---
 
@@ -82,7 +84,7 @@ A solução tem duas camadas: `PrinterInstall.Core` (catálogo de drivers, auten
 | `dotnet build PrinterInstall.sln` | Compila a solução. |
 | `dotnet run --project src/PrinterInstall.App` | Inicia o aplicativo. |
 | `dotnet test PrinterInstall.sln` | Executa os testes. |
-| `pwsh scripts/Publish-PrinterInstall.ps1` | Gera o executável único em `publish/PrinterInstall`. |
+| `pwsh scripts/Publish-PrinterInstall.ps1` | Gera o executável único `Hermes.exe` em `publish/PrinterInstall`. |
 | `python scripts/Test-PublicData.py` | Confere que o repositório não contém dados reais de ambiente. |
 | `pwsh scripts/Test-Secrets.ps1` | Procura segredos antes de enviar alterações. |
 

@@ -1,7 +1,6 @@
 using System.IO;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Media;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Microsoft.Extensions.Configuration;
@@ -30,10 +29,7 @@ public partial class App : Application
         CultureInfo.DefaultThreadCurrentCulture = ptBr;
         CultureInfo.DefaultThreadCurrentUICulture = ptBr;
 
-        ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.Mica);
-        ApplicationAccentColorManager.Apply(
-            Color.FromRgb(37, 99, 235),
-            ApplicationTheme.Light);
+        ApplicationThemeManager.Apply(ApplicationTheme.Light, WindowBackdropType.None);
 
         var builder = Host.CreateApplicationBuilder();
 

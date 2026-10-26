@@ -43,7 +43,7 @@ try {
     }
 
     # 2. Limpa diretório de publicação anterior
-    $runningProcesses = Get-Process -Name "Printer Install", "PrinterInstall.App" -ErrorAction SilentlyContinue
+    $runningProcesses = Get-Process -Name "Hermes", "Printer Install", "PrinterInstall.App" -ErrorAction SilentlyContinue
     if ($runningProcesses) {
         Write-Host "  -> Encerrando instância em execução para permitir atualização do executável..." -ForegroundColor Yellow
         $runningProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -71,7 +71,7 @@ try {
 
     # Validação e renomeação do executável
     $defaultExe = Join-Path $publishDir "PrinterInstall.App.exe"
-    $finalExe = Join-Path $publishDir "Printer Install.exe"
+    $finalExe = Join-Path $publishDir "Hermes.exe"
 
     if (Test-Path $defaultExe) {
         try {
@@ -81,7 +81,7 @@ try {
             Move-Item -Path $defaultExe -Destination $finalExe -Force -ErrorAction Stop
         }
         catch {
-            Write-Warning "O arquivo 'Printer Install.exe' está em execução e protegido pelo Windows. Feche a janela aberta do aplicativo para que a substituição seja concluída. O binário atualizado recém-compilado está salvo como 'PrinterInstall.App.exe'."
+            Write-Warning "O arquivo 'Hermes.exe' está em execução e protegido pelo Windows. Feche a janela aberta do aplicativo para que a substituição seja concluída. O binário atualizado recém-compilado está salvo como 'PrinterInstall.App.exe'."
         }
     }
 
@@ -101,7 +101,7 @@ try {
     Write-Host "Executável gerado:  $(Split-Path $targetExe -Leaf) ($exeSizeMb MB)" -ForegroundColor Yellow
     Write-Host "Total de arquivos na pasta: $($files.Count) arquivo(s)" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Distribuição: Apenas copie o arquivo 'Printer Install.exe' para as máquinas de destino."
+    Write-Host "Distribuição: Apenas copie o arquivo 'Hermes.exe' para as máquinas de destino."
     Write-Host ""
 }
 finally {

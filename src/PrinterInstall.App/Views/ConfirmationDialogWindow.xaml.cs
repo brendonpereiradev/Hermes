@@ -1,11 +1,12 @@
 using System.Windows;
 using System.Windows.Controls;
+using PrinterInstall.App.Controls;
 using Wpf.Ui.Controls;
 using TextBlock = System.Windows.Controls.TextBlock;
 
 namespace PrinterInstall.App.Views;
 
-public partial class ConfirmationDialogWindow : FluentWindow
+public partial class ConfirmationDialogWindow : HermesWindow
 {
     public ConfirmationDialogWindow()
     {

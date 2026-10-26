@@ -87,14 +87,14 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
             '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $scriptPath
         )
         if ($null -eq $proc) {{
-            Write-Output 'RESULT>> FAIL Prompt UAC cancelado. Execute o Printer Install como administrador.'
+            Write-Output 'RESULT>> FAIL Prompt UAC cancelado. Execute o Hermes como administrador.'
             exit 1
         }}
         exit $proc.ExitCode
     }}
     catch {{
         Write-Output ('ELEVATE>> UAC negado: ' + $_.Exception.Message)
-        Write-Output 'RESULT>> FAIL Execute o Printer Install como administrador ou aceite o prompt UAC.'
+        Write-Output 'RESULT>> FAIL Execute o Hermes como administrador ou aceite o prompt UAC.'
         exit 1
     }}
 }}
@@ -368,7 +368,7 @@ try {{
             $pnpDetail += ': ' + ($pnpLines -join ' | ')
         }}
         if ($pnpDetail -match '(?i)(Access is denied|Acesso negado)') {{
-            $pnpDetail = $pnpDetail + ' Execute o Printer Install como administrador ou aceite o prompt UAC.'
+            $pnpDetail = $pnpDetail + ' Execute o Hermes como administrador ou aceite o prompt UAC.'
         }}
         Write-Output ('RESULT>> FAIL pnputil: ' + $pnpDetail)
         Stop-Transcript | Out-Null
@@ -490,7 +490,7 @@ catch {{
     public static string DescribeInstallScriptFailure(string installOutput, uint processReturnValue, uint? wmiCreateReturn = null)
     {
         if (wmiCreateReturn is uint wmi && wmi != 0)
-            return $"Install script could not start locally (WMI return {wmi}). Run Printer Install as administrator.";
+            return $"Install script could not start locally (WMI return {wmi}). Run Hermes as administrator.";
 
         var resultLine = ExtractResultLine(installOutput);
         if (!string.IsNullOrEmpty(resultLine))

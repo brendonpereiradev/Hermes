@@ -1,0 +1,26 @@
+<UserControl x:Class="PrinterInstall.App.Controls.BrandTitle"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:appControls="clr-namespace:PrinterInstall.App.Controls"
+             x:Name="Root"
+             IsHitTestVisible="False"
+             Focusable="False"
+             IsTabStop="False">
+    <!-- Fica sobre a barra de título sem receber cliques, para a janela continuar arrastável. -->
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <appControls:HermesEmblem Width="22" Height="22"
+                                  IsAnimating="{Binding IsAnimating, ElementName=Root}"/>
+        <appControls:LetterSpacedText Text="HERMES"
+                                      Margin="12,0,0,0"
+                                      VerticalAlignment="Center"
+                                      FontFamily="{StaticResource AppDisplayFontFamily}"
+                                      FontSize="16"
+                                      FontWeight="SemiBold"
+                                      Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+        <TextBlock Text="{Binding Subtitle, ElementName=Root}"
+                   Margin="8,1,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="13"
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+    </StackPanel>
+</UserControl>

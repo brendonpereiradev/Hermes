@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 128" role="img" aria-labelledby="t">
+  <title id="t">Hermes, implantação de impressoras</title>
+  <style>
+    /* O mesmo voo do app: a asa bate, a folha flutua e as linhas CMY se imprimem; depois pousa. */
+    .flight { animation: hover 0.64s ease-in-out 4; }
+    .wing { transform-origin: 56px 62px; animation: beat 0.64s ease-in-out 4; }
+    .ink { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); animation: ink 0.3s ease-out forwards; }
+    .ink.c { animation-delay: 0.3s; }
+    .ink.m { animation-delay: 0.6s; }
+    .ink.y { animation-delay: 0.9s; }
+    .name { opacity: 0; animation: enter 0.6s ease-out 1.6s forwards; }
+    .tag { opacity: 0; animation: enter 0.6s ease-out 1.9s forwards; }
+    @keyframes hover { 50% { transform: translateY(-5px); } }
+    @keyframes beat { 50% { transform: rotate(-16deg); } }
+    @keyframes ink { to { transform: scaleX(1); } }
+    @keyframes enter { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .flight, .wing { animation: none; }
+      .ink { animation: none; transform: none; }
+      .name, .tag { animation: none; opacity: 1; }
+    }
+  </style>
+  <rect width="600" height="128" fill="#101318"/>
+  <defs>
+    <linearGradient id="hm-tile" x1="0" y1="0" x2="0" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1f2530"/>
+      <stop offset="1" stop-color="#101318"/>
+    </linearGradient>
+  </defs>
+  <!-- Emblema -->
+  <rect width="128" height="128" rx="28" fill="url(#hm-tile)"/>
+  <rect x="1.5" y="1.5" width="125" height="125" rx="26.5" fill="none" stroke="#4c8df6" stroke-opacity="0.4" stroke-width="3"/>
+  <g class="flight">
+    <path d="M56 28 H86 L98 40 V100 H56 Z" fill="#e6e9ee"/>
+    <path d="M86 28 V40 H98 Z" fill="#98a2b0"/>
+    <path class="ink c" d="M65 54 H89" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
+    <path class="ink m" d="M65 66 H89" stroke="#db2777" stroke-width="5" stroke-linecap="round"/>
+    <path class="ink y" d="M65 78 H81" stroke="#eab308" stroke-width="5" stroke-linecap="round"/>
+    <path class="wing" d="M56 50 C44 48 30 40 20 28 M56 62 C44 61 32 56 22 48 M56 74 C46 74 38 71 30 66" fill="none" stroke="#e8a05c" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <!-- Nome -->
+  <text class="name" x="156" y="74" font-family="Bahnschrift, 'Barlow Condensed', 'Segoe UI', sans-serif" font-size="58" font-weight="600" letter-spacing="18" fill="#e6e9ee">HERMES</text>
+  <text class="tag" x="158" y="103" font-family="'Cascadia Mono', Consolas, ui-monospace, monospace" font-size="15" letter-spacing="5.4" fill="#8db5fa">IMPLANTAÇÃO DE IMPRESSORAS</text>
+</svg>

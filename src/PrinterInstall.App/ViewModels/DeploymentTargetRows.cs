@@ -26,6 +26,21 @@ internal static class DeploymentTargetRows
             or TargetMachineState.PrinterIdentityMismatch
             or TargetMachineState.PrinterIdentityUnknown;
 
+    /// <summary>Linhas que terminaram com sucesso e com falha, para o resumo do painel de status.</summary>
+    public static (int Succeeded, int Failed) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
+    {
+        var succeeded = 0;
+        var failed = 0;
+        foreach (var row in targets)
+        {
+            if (row.State == TargetMachineState.CompletedSuccess)
+                succeeded++;
+            else if (IsFailureState(row.State))
+                failed++;
+        }
+        return (succeeded, failed);
+    }
+
     /// <summary>Um evento sem fila se aplica a todas as linhas do computador.</summary>
     public static void ApplyProgress(IEnumerable<TargetRowViewModel> targets, DeploymentProgressEvent e)
     {
