@@ -95,7 +95,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Publish-PrinterInstall.ps1 -C
 
 ## 3. Login e configuração de domínio
 
-<p align="center"><img src="screenshots/login.png" alt="Tela de login" width="45%" /></p>
+<p align="center"><img src="screenshots/login.png" alt="Tela de login" width="38%" /></p>
 
 Informe seu usuário e senha de rede e clique em **Entrar**. O campo Usuário aceita:
 
@@ -154,6 +154,8 @@ Ao clicar em **Implantar**, o aplicativo valida os dados e pode exibir avisos:
 | Possível divergência de modelo | O nome da fila sugere outro tipo (ex.: ETIQ ou PULSEIRA com marca de folha comum). | Confira a marca. **Prosseguir mesmo assim** ou **Cancelar e corrigir**. |
 | Validação da impressora bloqueou a implantação | A impressora no IP informado é de outra marca/modelo, ou não pôde ser identificada com segurança. | Confira o IP e o modelo selecionado. Nenhuma alteração é feita nas estações. |
 
+As caixas de aviso e de resumo não têm barra de título: feche pelos botões da própria caixa ou com **Esc**, e arraste pelo corpo da caixa para movê-la.
+
 ### 4.4 Acompanhamento
 
 Os computadores são processados em paralelo. A tabela **Status** mostra, para cada computador e fila, o estado atual e uma mensagem. Uma falha em uma máquina não interrompe as demais.
@@ -205,7 +207,7 @@ Em cada impressora, marque **Remover** para excluí-la ou digite um nome em **Re
 
 ### 5.3 Revisar o plano e executar
 
-A última etapa lista as remoções e renomeações por computador. Clique em **Executar alterações**. Filas removidas têm suas portas TCP/IP apagadas quando ficam sem uso; renomeações são aplicadas sem reinstalar o driver. O **Log de execução** registra cada operação e pode ser exportado.
+A última etapa lista as remoções e renomeações por computador. Clique em **Executar alterações**. Filas removidas têm suas portas TCP/IP apagadas quando ficam sem uso; renomeações são aplicadas sem reinstalar o driver. O **Log de execução** registra cada operação e pode ser exportado. Ao terminar, uma caixa de resumo mostra o resultado: ícone azul quando tudo deu certo, âmbar quando houve falhas parciais e vermelho quando nenhuma alteração deu certo ou ocorreu um erro inesperado.
 
 ### 5.4 Reiniciar spooler
 
