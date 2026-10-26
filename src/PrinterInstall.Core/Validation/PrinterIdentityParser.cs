@@ -11,7 +11,7 @@ public static partial class PrinterIdentityParser
     [GeneratedRegex(@"\b(?:WF[ -]?[MC][ -]?\d{4}|M\d{4}|ET[ -]?\d{4}|L\d{4})\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex EpsonModelPattern();
 
-    [GeneratedRegex(@"\b(?:CX|MX|MS|CS|MC|C|B)\d{3,4}[A-Z0-9-]*\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\b(?:CX|MX|MS|CS|MC|MB|C|B)\d{3,4}[A-Z0-9-]*\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex LexmarkModelPattern();
 
     [GeneratedRegex(@"\b(?:HL|MFC|DCP)[ -]?[A-Z]?\d{3,5}[A-Z0-9-]*\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

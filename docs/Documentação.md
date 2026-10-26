@@ -43,11 +43,20 @@ Além da implantação, o aplicativo oferece o **Controle de impressoras** (cons
 | Opção no aplicativo | Uso típico | Driver utilizado | Modelos testados |
 |---|---|---|---|
 | Epson | Jato de tinta e multifuncionais | EPSON Universal Print Driver | EcoTank M1180, WorkForce Pro WF-M5899, WF-M5799, WF-C5890, WF-C5790 |
-| Lexmark | Laser para receitas e prontuários | Lexmark Universal v4 XL / v2 XL | CX532adwe |
+| Lexmark | Laser para receitas e prontuários | Lexmark Universal v4 XL / v2 XL | CX532adwe, MX622adhe |
 | Brother | Laser de posto e administrativo | Brother HL-L5212DW Printer | HL-L5212DW |
 | Gainscha | Etiquetas térmicas | Gainscha GA-2408T (Seagull) | GA-2408T |
 
 Outros modelos da mesma fabricante podem funcionar, mas não foram homologados.
+
+Para a Lexmark, o aplicativo aceita também as famílias atuais que o *Lexmark UPD Technical White Paper Rev. 3a* (UPD 3.1.0.0) lista sem restrições, comparando a família do modelo sem o sufixo de configuração (ex.: MX622ade, MX622adhe e MX622adthe contam todos como MX622):
+
+- **Laser mono:** MS321, MS331, MS421, MS431, MS521, MS531, MS621, MS622, MS631, MS632, MS725, MS821–MS826, B2338, B2442, B2546, B2650, B2865, B3340, B3442.
+- **Multifuncional mono:** MX321, MX331, MX421, MX431, MX432, MX521, MX522, MX532, MX622, MX632, MX721, MX722, MX725, MX822, MX824, MX826, MX931, MB2338, MB2442, MB2546, MB2650, MB2770, MB3442.
+- **Laser colorida:** CS331, CS421, CS431, CS521, CS531, CS622, CS632, CS720, CS725, CS727, CS728, CS730, CS735, CS737, CS820, CS827, CS921, CS923, CS927, CS943, CS963, C2240, C2326, C2335, C2425, C2535, C3224, C3326, C3426, C4342, C4352.
+- **Multifuncional colorida:** CX331, CX421, CX431, CX522, CX532, CX622, CX625, CX635, CX725, CX727, CX730, CX735, CX737, CX820, CX825, CX827, CX833, CX860, CX920–CX924, CX927, CX961–CX963, MC2325, MC2425, MC2535, MC2640, MC3224, MC3326, MC3426.
+
+Séries antigas com recursos limitados no driver (MS/MX/CS/CX 310–910, E, T, X) e a linha B2236/MB2236 continuam bloqueadas até serem testadas.
 
 ---
 

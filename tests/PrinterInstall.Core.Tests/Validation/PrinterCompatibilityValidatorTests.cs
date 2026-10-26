@@ -9,6 +9,15 @@ public class PrinterCompatibilityValidatorTests
     [InlineData("EPSON M1180 Series", PrinterBrand.Epson, "M1180")]
     [InlineData("EPSON WorkForce Pro WF-M5899", PrinterBrand.Epson, "WF-M5899")]
     [InlineData("Lexmark CX532adwe", PrinterBrand.Lexmark, "CX532ADWE")]
+    [InlineData("Lexmark MX622adhe", PrinterBrand.Lexmark, "MX622ADHE")]
+    [InlineData("Lexmark MX622ade", PrinterBrand.Lexmark, "MX622ADE")]
+    [InlineData("Lexmark MS431dn", PrinterBrand.Lexmark, "MS431DN")]
+    [InlineData("Lexmark MS821dn", PrinterBrand.Lexmark, "MS821DN")]
+    [InlineData("Lexmark CS531dw", PrinterBrand.Lexmark, "CS531DW")]
+    [InlineData("Lexmark CX735adse", PrinterBrand.Lexmark, "CX735ADSE")]
+    [InlineData("Lexmark MB2442adwe", PrinterBrand.Lexmark, "MB2442ADWE")]
+    [InlineData("Lexmark B2338dw", PrinterBrand.Lexmark, "B2338DW")]
+    [InlineData("Lexmark MC3326i", PrinterBrand.Lexmark, "MC3326I")]
     [InlineData("Brother HL-L5212DW", PrinterBrand.Brother, "HL-L5212DW")]
     [InlineData("Gainscha GA-2408T", PrinterBrand.Gainscha, "GA-2408T")]
     [InlineData("EPSON WFM5899", PrinterBrand.Epson, "WF-M5899")]
@@ -53,16 +62,26 @@ public class PrinterCompatibilityValidatorTests
     [Fact]
     public void Check_RejectsUnknownModelEvenWhenBrandMatches()
     {
-        var identity = PrinterIdentityParser.Parse("192.0.2.10", "Lexmark MS421", "SNMP");
+        var identity = PrinterIdentityParser.Parse("192.0.2.10", "Lexmark MS310dn", "SNMP");
         Assert.Equal(PrinterBrand.Lexmark, identity.Brand);
-        Assert.Equal("MS421", identity.Model);
+        Assert.Equal("MS310DN", identity.Model);
         Assert.False(PrinterCompatibilityValidator.Check(identity, PrinterBrand.Lexmark).Compatible);
     }
 
     [Fact]
     public void Check_RejectsUnsupportedKnownModelEvenWhenBrandMatches()
     {
-        var identity = new PrinterIdentityResult("192.0.2.10", PrinterBrand.Lexmark, "MS421", "SNMP");
+        var identity = new PrinterIdentityResult("192.0.2.10", PrinterBrand.Lexmark, "B2236DW", "SNMP");
+        Assert.False(PrinterCompatibilityValidator.Check(identity, PrinterBrand.Lexmark).Compatible);
+    }
+
+    [Theory]
+    [InlineData("MX62")]
+    [InlineData("MX6220")]
+    [InlineData("MB2236ADW")]
+    public void Check_LexmarkFamilyMatchRequiresExactFamily(string model)
+    {
+        var identity = new PrinterIdentityResult("192.0.2.10", PrinterBrand.Lexmark, model, "SNMP");
         Assert.False(PrinterCompatibilityValidator.Check(identity, PrinterBrand.Lexmark).Compatible);
     }
 
