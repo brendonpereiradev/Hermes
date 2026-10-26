@@ -12,6 +12,10 @@ namespace PrinterInstall.App.Tests.ViewModels;
 
 public class MainViewModelCancellationTests
 {
+    // Espera máxima por um evento que deve acontecer. Folgada para o runner do CI: só o caso de
+    // falha chega a esperar tudo isso; quando o teste passa, cada espera termina no próprio evento.
+    private static readonly TimeSpan EventTimeout = TimeSpan.FromSeconds(15);
+
     [Fact]
     public async Task CancelDuringDiagnostics_MarksWaitingTargetsAsCancelled_WithoutStartingDeploy()
     {
@@ -36,10 +40,10 @@ public class MainViewModelCancellationTests
         vm.PrinterRows[0].PrinterHostAddress = "192.0.2.10";
 
         var running = vm.DeployCommand.ExecuteAsync(null);
-        await collecting.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        await collecting.Task.WaitAsync(EventTimeout);
         Assert.All(vm.Targets, t => Assert.Equal(TargetMachineState.Pending, t.State));
         vm.CancelDeployCommand.Execute(null);
-        await running.WaitAsync(TimeSpan.FromSeconds(3));
+        await running.WaitAsync(EventTimeout);
 
         Assert.False(vm.IsDeployRunning);
         Assert.All(vm.Targets, t => Assert.Equal(TargetMachineState.DeployCancelled, t.State));
@@ -57,15 +61,21 @@ public class MainViewModelCancellationTests
             {
                 entered.TrySetResult();
                 // Reproduz uma chamada nativa síncrona sem suporte a CancellationToken.
-                release.Wait(TimeSpan.FromSeconds(3));
+                release.Wait(EventTimeout);
                 throw new UnauthorizedAccessException("native access denied");
             });
         var session = new SessionContext { Credential = new NetworkCredential("admin", "unique-secret", "DOMAIN") };
         var rollback = new DeploymentRollbackRunner(remote.Object, new PrinterControlOrchestrator(remote.Object));
         var export = new Mock<ILogExportService>();
         export.Setup(x => x.ExportLog(It.IsAny<string>(), It.IsAny<string>())).Returns(LogExportResult.Cancelled());
+        // Contexto de diagnóstico falso e instantâneo: o real consulta o Windows (token, rede) e,
+        // no runner do CI, chegava a passar do tempo de espera antes da primeira chamada remota.
+        var collector = new Mock<ILocalDiagnosticCollector>();
+        collector.Setup(x => x.CollectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(@"Usuário do processo: TEST\operador; SID: S-1-5-21-0" + Environment.NewLine);
         var vm = new MainViewModel(session, TestOrchestratorFactory.Create(remote.Object), rollback, null!,
-            new LocalMachineIdentity(), export.Object, new Mock<IDeploymentNotificationService>().Object);
+            new LocalMachineIdentity(), export.Object, new Mock<IDeploymentNotificationService>().Object,
+            diagnosticCollector: collector.Object);
         vm.ComputersText = "target-pc";
         vm.PrinterRows[0].Brand = PrinterBrand.Epson;
         vm.PrinterRows[0].DisplayName = "Recepção";
@@ -76,7 +86,7 @@ public class MainViewModelCancellationTests
         Assert.True(watch.Elapsed < TimeSpan.FromSeconds(2), "A chamada nativa bloqueou o chamador da UI.");
         try
         {
-            await entered.Task.WaitAsync(TimeSpan.FromSeconds(3));
+            await entered.Task.WaitAsync(EventTimeout);
             Assert.True(vm.IsDeployRunning);
             vm.CancelDeployCommand.Execute(null);
             Assert.True(vm.IsCancellationRequested);
@@ -91,7 +101,7 @@ public class MainViewModelCancellationTests
             export.Verify(x => x.ExportLog(It.IsAny<string>(), It.Is<string>(s => s.Contains("Usuário do processo") && s.Contains("caminho: REMOTO"))), Times.Once);
         }
         finally { release.Set(); }
-        await running.WaitAsync(TimeSpan.FromSeconds(5));
+        await running.WaitAsync(EventTimeout);
         Assert.False(vm.IsDeployRunning);
         Assert.All(vm.Targets, t => Assert.Equal(TargetMachineState.DeployCancelled, t.State));
         remote.Verify(x => x.CreateTcpPrinterPortAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(),
