@@ -93,6 +93,13 @@
                      ShowMinimize="False">
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                    <!-- Uso doméstico: entra sem domínio e só permite este computador como destino. -->
+                    <ui:Button Style="{StaticResource TitleBarToolButtonStyle}"
+                               ToolTip="{DynamicResource Login_UseLocallyToolTip}"
+                               IsEnabled="{Binding IsAuthenticating, Converter={StaticResource InverseBoolConverter}}"
+                               Click="UseLocally_OnClick">
+                        <ui:SymbolIcon Symbol="Desktop24" FontSize="16" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    </ui:Button>
                     <ui:Button Style="{StaticResource TitleBarToolButtonStyle}"
                                Command="{Binding ToggleThemeCommand}">
                         <ui:Button.ToolTip>

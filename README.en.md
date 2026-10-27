@@ -36,6 +36,7 @@ In version 1.6.0 the project got a visual rework to match the other projects in 
 | Direct test | Prints test pages or labels straight to raw port 9100 before installing. |
 | Gainscha labels | Configures the Patient (89 × 36 mm), Matrix (50 × 30 mm), Wristband (25 × 270 mm) and Batch (45 × 13 mm) sizes. |
 | Domain authentication | Validates credentials against Active Directory via LDAP, in UPN or NetBIOS format. |
+| Home use | The **Usar localmente** (use locally) button, the computer icon in the login title bar, signs in without a domain or password; the session only installs and manages printers on the local machine. |
 | Reports | Exports a log with the result of each operation. |
 
 ---
@@ -75,7 +76,7 @@ In version 1.6.0 the project got a visual rework to match the other projects in 
    dotnet run --project src/PrinterInstall.App
    ```
 
-3. On first run, set the domain and LDAP server from the settings icon and sign in as `user@domain` or `DOMAIN\user`.
+3. On first run, set the domain and LDAP server from the settings icon and sign in as `user@domain` or `DOMAIN\user`. At home, without a domain, click the computer icon in the title bar (**Usar localmente**): the computer list is locked to the local machine and Windows asks for elevation (UAC) when the install needs it.
 
 ### Available commands
 

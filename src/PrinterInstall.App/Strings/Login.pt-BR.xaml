@@ -11,6 +11,7 @@
   <sys:String x:Key="Login_CancelSignInButton">Cancelar</sys:String>
   <sys:String x:Key="Login_CancelSignInToolTip">Autenticando no domínio. Clique ou pressione Esc para cancelar.</sys:String>
   <sys:String x:Key="Login_RememberMeLabel">Lembrar-me</sys:String>
+  <sys:String x:Key="Login_UseLocallyToolTip">Usar localmente: entra sem domínio, para uso em casa. Só este computador pode receber impressoras.</sys:String>
   <sys:String x:Key="Login_ThemeToggle_DarkToolTip">Alternar para modo escuro</sys:String>
   <sys:String x:Key="Login_ThemeToggle_LightToolTip">Alternar para modo claro</sys:String>
   <sys:String x:Key="Login_SettingsToolTip">Configurações de domínio e rede</sys:String>

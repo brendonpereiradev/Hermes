@@ -24,6 +24,7 @@ public class UiStrings
     public static string Main_Validation_GainschaLabelPresetRequired => ResourceManager.GetString(nameof(Main_Validation_GainschaLabelPresetRequired), ResourceCulture)!;
     public static string Main_InvalidComputerNameFormat => ResourceManager.GetString(nameof(Main_InvalidComputerNameFormat), ResourceCulture)!;
     public static string Main_LocalComputerSuffix => ResourceManager.GetString(nameof(Main_LocalComputerSuffix), ResourceCulture)!;
+    public static string Main_LocalOnlyRemoteBlocked => ResourceManager.GetString(nameof(Main_LocalOnlyRemoteBlocked), ResourceCulture)!;
     public static string Main_SummaryLineFormat => ResourceManager.GetString(nameof(Main_SummaryLineFormat), ResourceCulture)!;
     public static string Main_SummaryOtherFormat => ResourceManager.GetString(nameof(Main_SummaryOtherFormat), ResourceCulture)!;
     public static string Main_SummaryFailureLineFormat => ResourceManager.GetString(nameof(Main_SummaryFailureLineFormat), ResourceCulture)!;
@@ -43,6 +44,7 @@ public class UiStrings
     public static string Login_Validation_DomainRequired => ResourceManager.GetString(nameof(Login_Validation_DomainRequired), ResourceCulture)!;
     public static string Removal_NotAuthenticated => ResourceManager.GetString(nameof(Removal_NotAuthenticated), ResourceCulture)!;
     public static string Removal_Validation_ComputersRequired => ResourceManager.GetString(nameof(Removal_Validation_ComputersRequired), ResourceCulture)!;
+    public static string Removal_LocalOnlyRemoteBlockedFormat => ResourceManager.GetString(nameof(Removal_LocalOnlyRemoteBlockedFormat), ResourceCulture)!;
     public static string Removal_NoPrintersSelected => ResourceManager.GetString(nameof(Removal_NoPrintersSelected), ResourceCulture)!;
     public static string Removal_Finished => ResourceManager.GetString(nameof(Removal_Finished), ResourceCulture)!;
     public static string Removal_StepLabelFormat => ResourceManager.GetString(nameof(Removal_StepLabelFormat), ResourceCulture)!;

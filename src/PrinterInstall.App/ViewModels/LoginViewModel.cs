@@ -222,6 +222,7 @@ public partial class LoginViewModel : ObservableObject
 
             _session.Credential = cred;
             _session.DomainName = domainName;
+            _session.IsLocalOnly = false;
             return (true, null);
         }
         catch (OperationCanceledException) when (attempt.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
@@ -235,6 +236,19 @@ public partial class LoginViewModel : ObservableObject
             _attemptCts = null;
             IsAuthenticating = false;
         }
+    }
+
+    /// <summary>
+    /// Entra sem domínio, para uso doméstico. As operações locais rodam com a conta do Windows em uso
+    /// (pedindo UAC quando preciso) e ignoram a senha; por isso a sessão só aceita este computador como destino.
+    /// </summary>
+    public void SignInLocally()
+    {
+        ClearError();
+        _session.Credential = new NetworkCredential(Environment.UserName, "", Environment.MachineName);
+        _session.DomainName = "";
+        _session.IsLocalOnly = true;
+        _diagnosticLogger?.LogInfo("Sessão local aberta sem domínio (somente este computador).", "Login");
     }
 
     internal static (string UserName, string DomainName) ParseCredentialIdentity(string rawUserName, string configuredDomain) =>

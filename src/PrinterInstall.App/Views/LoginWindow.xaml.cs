@@ -146,10 +146,7 @@ public partial class LoginWindow
                 return;
             }
 
-            var main = _serviceProvider.GetRequiredService<MainWindow>();
-            Application.Current.MainWindow = main;
-            main.Show();
-            Close();
+            OpenMainWindow();
         }
         catch (OperationCanceledException) when (_loginCts.IsCancellationRequested)
         {
@@ -160,6 +157,23 @@ public partial class LoginWindow
             // Trata exceções não esperadas exibindo na interface sem derrubar o processo WPF.
             _viewModel.ShowUnexpectedError(ex);
         }
+    }
+
+    private void UseLocally_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.IsAuthenticating)
+            return;
+
+        _viewModel.SignInLocally();
+        OpenMainWindow();
+    }
+
+    private void OpenMainWindow()
+    {
+        var main = _serviceProvider.GetRequiredService<MainWindow>();
+        Application.Current.MainWindow = main;
+        main.Show();
+        Close();
     }
 
     private void Settings_OnClick(object sender, RoutedEventArgs e)

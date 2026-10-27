@@ -41,7 +41,7 @@ Além da implantação, o aplicativo oferece o **Controle de impressoras** (cons
 ### Pré-requisitos
 
 - Windows 10, Windows 11 ou Windows Server.
-- Conta de domínio com privilégio administrativo nos computadores de destino.
+- Conta de domínio com privilégio administrativo nos computadores de destino. Para usar em casa, sem domínio, basta uma conta do Windows que possa confirmar a elevação (UAC) na própria máquina; veja [Uso local, sem domínio](#uso-local-sem-domínio).
 - Nome de rede ou IP de cada computador de destino (ex.: `PC-RECEPCAO-01` ou `192.0.2.120`).
 - IP fixo ou reservado da impressora (ex.: `192.0.2.50`), acessível na porta 9100.
 - Para computadores remotos: acesso de gerenciamento (RPC/WMI e SMB) liberado no firewall.
@@ -107,9 +107,19 @@ Informe seu usuário e senha de rede e clique em **Entrar**. O campo Usuário ac
 
 - **Lembrar-me** guarda apenas o nome de usuário. A senha fica somente na memória durante a execução e nunca é gravada em disco.
 - O ícone de olho mostra ou oculta a senha; o ícone de sol/lua alterna entre tema claro e escuro.
+- O ícone de computador, na barra de título, entra sem domínio para uso local (veja abaixo).
 - **Lembrar-me** e o tema escolhido valem para as próximas aberturas do aplicativo.
 - Enquanto o domínio valida a senha, o botão **Entrar** vira **Cancelar**. Clique nele ou pressione **Esc** para voltar ao formulário na hora, por exemplo quando perceber que digitou a senha errada. A tentativa já enviada ao domínio ainda conta como uma tentativa de senha.
 - Em caso de erro, a tela mostra a causa (senha incorreta, conta bloqueada, domínio não encontrado, sem rede/VPN) e o link **Ver detalhes técnicos**.
+
+### Uso local, sem domínio
+
+Para instalar uma impressora em casa ou em um computador fora do domínio, clique no ícone de computador na barra de título da tela de login, à esquerda do sol/lua e da engrenagem. Passando o mouse, aparece a dica **Usar localmente**. Não é preciso usuário, senha nem domínio configurado.
+
+- A sessão local só trabalha nesta máquina. Na implantação e no Controle de impressoras, a lista de computadores já vem com o nome deste PC e não pode ser editada.
+- As operações rodam com a conta do Windows em uso. Quando uma etapa precisa de privilégio administrativo, o Windows pede confirmação (UAC); a conta precisa ser administradora ou saber a senha de um administrador.
+- O relatório de log identifica o operador como `COMPUTADOR\usuário` do Windows.
+- Para voltar a trabalhar em computadores remotos, feche o aplicativo e entre com uma conta de domínio.
 
 ### Configurações de domínio e rede
 
@@ -131,6 +141,7 @@ As configurações valem de imediato e ficam em `%LocalAppData%\PrinterInstall\s
 
 - Digite no campo **Computadores alvo** um nome de rede ou IP por linha. É possível colar uma lista inteira.
 - **Adicionar este PC** inclui a máquina local (marcada como "(este PC)").
+- Na sessão local (sem domínio), o campo já vem com este PC e fica travado; um nome remoto termina em erro sem ser contatado.
 - O contador ao lado do título mostra quantos computadores foram reconhecidos e quantos estão inválidos.
 
 ### 4.2 Configuração de impressora
@@ -193,7 +204,7 @@ Abra pelo botão **Controle de impressoras** no topo da janela principal. O assi
 
 ### 5.1 Selecionar computadores
 
-1. Informe um IP ou nome de computador por linha (Enter adiciona outra linha) ou use **Adicionar este PC**.
+1. Informe um IP ou nome de computador por linha (Enter adiciona outra linha) ou use **Adicionar este PC**. Na sessão local, o campo já vem com este PC e fica travado.
 2. Clique em **Avançar**.
 
 ### 5.2 Revisar cada computador
@@ -274,4 +285,7 @@ O tamanho escolhido é maior que o rolo instalado. Remova a fila no Controle de 
 Use **Reiniciar spooler** no Controle de impressoras.
 
 **Usuário ou senha incorretos / domínio não encontrado**  
-Confira o formato do usuário, o domínio nas Configurações e a conexão com a rede da empresa ou VPN. Se o DNS não resolver o domínio, informe um host LDAP alternativo.
+Confira o formato do usuário, o domínio nas Configurações e a conexão com a rede da empresa ou VPN. Se o DNS não resolver o domínio, informe um host LDAP alternativo. Fora da empresa, sem domínio, use o ícone de computador da tela de login (**Usar localmente**).
+
+**Uso local: a instalação falha pedindo permissão de administrador**  
+Na sessão sem domínio, o Windows pede confirmação (UAC) nas etapas administrativas. Se a conta não for administradora e ninguém informar a senha de um administrador, a instalação para nessa etapa e o que foi criado é revertido.

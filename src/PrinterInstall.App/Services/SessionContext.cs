@@ -6,4 +6,5 @@ public sealed class SessionContext : ISessionContext
 {
     public NetworkCredential? Credential { get; set; }
     public string DomainName { get; set; } = "";
+    public bool IsLocalOnly { get; set; }
 }

@@ -36,6 +36,7 @@ Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros p
 | Teste de comunicação | Imprime páginas ou etiquetas de teste direto pela porta raw 9100 antes de instalar. |
 | Etiquetas Gainscha | Configura os tamanhos Paciente (89 × 36 mm), Matrix (50 × 30 mm), Pulseira (25 × 270 mm) e Lote (45 × 13 mm). |
 | Autenticação por domínio | Valida credenciais no Active Directory via LDAP, nos formatos UPN ou NetBIOS. |
+| Uso doméstico | O botão **Usar localmente** (ícone de computador na barra de título do login) entra sem domínio e sem senha; a sessão só instala e gerencia impressoras na própria máquina. |
 | Relatórios | Exporta um log com o resultado de cada operação. |
 
 ---
@@ -75,7 +76,7 @@ Na versão 1.6.0 o projeto recebeu um rework visual para se alinhar aos outros p
    dotnet run --project src/PrinterInstall.App
    ```
 
-3. Na primeira execução, configure o domínio e o servidor LDAP no ícone de configurações e entre com `usuario@dominio` ou `DOMINIO\usuario`.
+3. Na primeira execução, configure o domínio e o servidor LDAP no ícone de configurações e entre com `usuario@dominio` ou `DOMINIO\usuario`. Em casa, sem domínio, clique no ícone de computador na barra de título (**Usar localmente**): a lista de computadores fica travada na máquina local e o Windows pede elevação (UAC) quando a instalação precisar.
 
 ### Comandos disponíveis
 

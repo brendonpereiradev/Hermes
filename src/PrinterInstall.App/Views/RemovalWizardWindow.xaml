@@ -71,6 +71,7 @@
                         <ui:Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Padding="16,6"
                                 Content="{DynamicResource Removal_Next}" Command="{Binding StartCommand}" Margin="0,8,0,0" Style="{StaticResource PrimaryActionButtonStyle}" IsDefault="True"/>
                         <TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
+                                 IsReadOnly="{Binding IsLocalOnly}"
                                  AcceptsReturn="True"
                                  FontFamily="{StaticResource AppMonoFontFamily}"
                                  FontSize="13"

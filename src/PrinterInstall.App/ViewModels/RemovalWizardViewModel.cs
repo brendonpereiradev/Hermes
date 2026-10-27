@@ -66,7 +66,13 @@ public partial class RemovalWizardViewModel : ObservableObject
         _reachabilityChecker = reachabilityChecker ?? new NullFastHostReachabilityChecker();
         _diagnosticLogger = diagnosticLogger;
         QueuesForCurrentComputer.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowQueuesEmptyHint));
+
+        if (_session.IsLocalOnly)
+            ComputersText = _localMachineIdentity.GetPrimaryLocalName();
     }
+
+    /// <summary>Sessão sem domínio: a lista de computadores fica travada neste computador.</summary>
+    public bool IsLocalOnly => _session.IsLocalOnly;
 
     [ObservableProperty] private int _currentStepIndex;
 
@@ -236,6 +242,16 @@ public partial class RemovalWizardViewModel : ObservableObject
         {
             Log.Append(UiStrings.Removal_Validation_ComputersRequired);
             return;
+        }
+
+        if (_session.IsLocalOnly)
+        {
+            var remoteNames = names.Where(n => !_localMachineIdentity.IsLocalMachine(n)).ToList();
+            if (remoteNames.Count > 0)
+            {
+                Log.Append(string.Format(UiStrings.Removal_LocalOnlyRemoteBlockedFormat, string.Join(", ", remoteNames)));
+                return;
+            }
         }
 
         _machineOrder = names.ToList();

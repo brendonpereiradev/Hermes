@@ -77,7 +77,13 @@ public partial class MainViewModel : ObservableObject
             RemovePrinterRowCommand.NotifyCanExecuteChanged();
         };
         Targets.CollectionChanged += OnTargetsChanged;
+
+        if (_session.IsLocalOnly)
+            ComputersText = _localMachineIdentity.GetPrimaryLocalName();
     }
+
+    /// <summary>Sessão sem domínio: a lista de computadores fica travada neste computador.</summary>
+    public bool IsLocalOnly => _session.IsLocalOnly;
 
     public bool ShowStatusEmptyHint => Targets.Count == 0;
 
@@ -386,6 +392,12 @@ public partial class MainViewModel : ObservableObject
             if (!ComputerNameValidator.IsPlausibleComputerName(n))
             {
                 AddTargetRows(n, definitions, TargetMachineState.Error, UiStrings.Main_InvalidComputerNameFormat);
+                continue;
+            }
+
+            if (_session.IsLocalOnly && !_localMachineIdentity.IsLocalMachine(n))
+            {
+                AddTargetRows(n, definitions, TargetMachineState.Error, UiStrings.Main_LocalOnlyRemoteBlocked);
                 continue;
             }
 

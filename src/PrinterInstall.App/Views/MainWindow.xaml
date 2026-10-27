@@ -308,6 +308,7 @@
                             <!-- Nomes digitados em Consolas; a instrução, na fonte da interface (o placeholder do WPF UI herdaria a Consolas). -->
                             <Grid>
                                 <ui:TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
+                                            IsReadOnly="{Binding IsLocalOnly}"
                                             AcceptsReturn="True"
                                             FontFamily="{StaticResource AppMonoFontFamily}"
                                             FontSize="13"
