@@ -16,7 +16,6 @@ public static class GainschaLabelPresetRemoteStager
     {
         return Task.Run(() =>
         {
-            var paths = RemoteDriverStagingPaths.Create(host);
             var templateFileName = GainschaLabelTemplateLoader.TemplateFileName(preset);
             var defaultsFileName = GainschaLabelTemplateLoader.DefaultsTemplateFileName(preset);
             var templateContent = GainschaLabelTemplateLoader.LoadText(preset);
@@ -24,6 +23,8 @@ public static class GainschaLabelPresetRemoteStager
             var cleanupContent = GainschaLabelCleanupImportSdsBuilder.Build(preset);
 
             using var share = SmbShareConnection.Open(host, "ADMIN$", credential);
+            // Depois de abrir, para os caminhos UNC usarem o mesmo nome de servidor da conexão.
+            var paths = RemoteDriverStagingPaths.Create(host);
             Directory.CreateDirectory(paths.UncRoot);
             SeagullSdsFileWriter.Write(
                 Path.Combine(paths.UncRoot, templateFileName),

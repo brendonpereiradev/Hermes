@@ -12,7 +12,7 @@ public sealed record RemoteDriverStagingPaths(
     public static RemoteDriverStagingPaths Create(string host)
     {
         var id = Guid.NewGuid().ToString("N");
-        var h = host.Trim();
+        var h = SmbShareConnection.ResolveServerName(host);
         return new RemoteDriverStagingPaths(
             id,
             $@"\\{h}\ADMIN$\Temp\PrinterInstall\{id}",

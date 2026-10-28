@@ -17,6 +17,8 @@ public sealed class SmbShareConnection : IDisposable
     private const int ErrorDeviceAlreadyRemembered = 1202;
     private const int ErrorSessionCredentialConflict = 1219;
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> ServerAliases = new();
+
     private readonly string _remoteName;
     private bool _disposed;
 
@@ -32,25 +34,39 @@ public sealed class SmbShareConnection : IDisposable
     {
         var cleanHost = host.Trim();
         var cleanShare = shareName.Trim('\\', '/');
-        var remote = $@"\\{cleanHost}\{cleanShare}";
-        var isIpc = cleanShare.Equals("IPC$", StringComparison.OrdinalIgnoreCase);
-
-        var netResource = new NetResource
-        {
-            ResourceType = isIpc ? ResourceTypeAny : ResourceTypeDisk,
-            RemoteName = remote
-        };
+        var server = ResolveServerName(cleanHost);
+        var remote = $@"\\{server}\{cleanShare}";
+        var resourceType = cleanShare.Equals("IPC$", StringComparison.OrdinalIgnoreCase) ? ResourceTypeAny : ResourceTypeDisk;
         var user = CredentialHelper.BuildCredentialUserName(credential);
         var password = credential.Password ?? "";
 
-        var code = WNetAddConnection2(netResource, password, user, 0);
+        var code = Connect(remote, resourceType, user, password);
 
         if (code is ErrorSessionCredentialConflict or ErrorAlreadyAssigned or ErrorDeviceAlreadyRemembered)
         {
-            PurgeHostConnections(cleanHost, remote);
+            PurgeHostConnections(server, remote);
             Thread.Sleep(100);
 
-            code = WNetAddConnection2(netResource, password, user, 0);
+            code = Connect(remote, resourceType, user, password);
+        }
+
+        // Sessões abertas pelo Explorer ou por unidades mapeadas do usuário não aparecem como
+        // conexões nossas e não podem ser derrubadas. O redirecionador SMB separa sessões pelo
+        // nome do servidor, então outro nome para o mesmo destino aceita a conta informada.
+        if (code == ErrorSessionCredentialConflict)
+        {
+            foreach (var alias in GetAlternateServerNames(cleanHost, Dns.GetHostEntry))
+            {
+                if (alias.Equals(server, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var aliasRemote = $@"\\{alias}\{cleanShare}";
+                if (Connect(aliasRemote, resourceType, user, password) != 0)
+                    continue;
+
+                ServerAliases[NormalizeHostKey(cleanHost)] = alias;
+                return new SmbShareConnection(aliasRemote);
+            }
         }
 
         // Uma conexão existente com outra identidade não valida a conta informada.
@@ -60,6 +76,71 @@ public sealed class SmbShareConnection : IDisposable
 
         return new SmbShareConnection(remote);
     }
+
+    /// <summary>
+    /// Nome de servidor a usar em caminhos UNC para o host. Depois de um conflito de credenciais
+    /// (Win32 1219) pode ser um nome alternativo do mesmo destino; caminhos montados com o nome
+    /// original cairiam na sessão SMB da outra conta.
+    /// </summary>
+    public static string ResolveServerName(string host)
+    {
+        var cleanHost = host.Trim();
+        return ServerAliases.TryGetValue(NormalizeHostKey(cleanHost), out var alias) ? alias : cleanHost;
+    }
+
+    internal static IReadOnlyList<string> GetAlternateServerNames(string host, Func<string, IPHostEntry> resolve)
+    {
+        var cleanHost = host.Trim().TrimEnd('.');
+        var names = new List<string>();
+
+        void Add(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            if (names.Contains(name, StringComparer.OrdinalIgnoreCase)) return;
+            if (name.Equals(host.Trim(), StringComparison.OrdinalIgnoreCase)) return;
+            names.Add(name);
+        }
+
+        IPHostEntry? entry = null;
+        try { entry = resolve(cleanHost); }
+        catch { /* Sem DNS reverso/direto ainda resta o nome com ponto final. */ }
+
+        if (IPAddress.TryParse(cleanHost, out _))
+        {
+            var fqdn = entry?.HostName;
+            if (!string.IsNullOrWhiteSpace(fqdn) && !IPAddress.TryParse(fqdn, out _))
+            {
+                Add(fqdn);
+                Add(fqdn.TrimEnd('.') + ".");
+                var shortName = fqdn.Split('.')[0];
+                Add(shortName);
+            }
+        }
+        else
+        {
+            Add(cleanHost + ".");
+            if (entry is not null)
+            {
+                Add(entry.HostName);
+                foreach (var address in entry.AddressList.Where(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork))
+                    Add(address.ToString());
+            }
+        }
+
+        return names;
+    }
+
+    private static int Connect(string remote, int resourceType, string? user, string password)
+    {
+        var netResource = new NetResource
+        {
+            ResourceType = resourceType,
+            RemoteName = remote
+        };
+        return WNetAddConnection2(netResource, password, user, 0);
+    }
+
+    private static string NormalizeHostKey(string host) => host.Trim().TrimEnd('.').ToUpperInvariant();
 
     public static async Task<SmbShareConnection> OpenAsync(
         string host, string shareName, NetworkCredential credential, CancellationToken cancellationToken)

@@ -17,7 +17,8 @@ internal static class RemoteAuthenticationDiagnostics
             if (current is Win32Exception { NativeErrorCode: 1326 })
                 return "O Windows recusou o usuário ou a senha (Win32 1326). Confira a conta no formato DOMINIO\\usuario ou usuario@dominio.";
             if (current is Win32Exception { NativeErrorCode: 1219 })
-                return "Já existe uma conexão SMB com outra conta (Win32 1219). Feche as conexões ao destino e tente novamente com a conta desejada.";
+                return "Já existe uma conexão SMB com outra conta (Win32 1219) e nenhum nome alternativo do destino (DNS) foi aceito. " +
+                    "Feche pastas do destino abertas no Explorer e unidades mapeadas para ele (net use), ou faça logoff, e tente novamente.";
         }
 
         if (AccessDeniedDetector.IsAccessDenied(exception))
