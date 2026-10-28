@@ -1,6 +1,6 @@
 # Hermes: documentação
 
-Guia de uso do Hermes (antigo PrinterInstall) 1.8.1 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do Hermes (antigo PrinterInstall) 1.8.2 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Na versão 1.6.0 o aplicativo passou a se chamar Hermes e ganhou um novo visual, alinhado aos projetos Talos e Hefesto. O executável agora é `Hermes.exe`; configurações e logs continuam na pasta `%LocalAppData%\PrinterInstall`, então quem já usava o aplicativo não perde nada.
 
@@ -289,6 +289,9 @@ Confira o formato do usuário, o domínio nas Configurações e a conexão com a
 
 **Não foi possível conectar ao domínio (notebook de outra empresa)**  
 Num computador que pertence a outro domínio, só um controlador do seu domínio consegue validar a senha, pelas portas 389 (LDAP) ou 445 (SMB). Se o DNS não encontrar o domínio, informe o IP de um controlador como host LDAP alternativo; o IP pode ser obtido numa máquina da empresa com `nltest /dsgetdc:<domínio>`. Se a porta 389 não responder (`Test-NetConnection <IP> -Port 389`), a rede ou VPN desse computador está bloqueando o acesso.
+
+**Já existe uma conexão SMB com outra conta (Win32 1219)**  
+O Windows não aceita duas sessões SMB com contas diferentes para o mesmo nome de servidor. Desde a versão 1.8.2 o Hermes tenta outro nome do mesmo destino (nome DNS, nome com ponto final ou IP) e segue com a conta informada. Se nenhum nome for aceito (por exemplo, destino informado por IP sem DNS reverso), informe o destino pelo nome ou feche as pastas dele abertas no Explorer e as unidades mapeadas (`net use \<destino> /delete`), ou faça logoff, e tente de novo.
 
 **Uso local: a instalação falha pedindo permissão de administrador**  
 Na sessão sem domínio, o Windows pede confirmação (UAC) nas etapas administrativas. Se a conta não for administradora e ninguém informar a senha de um administrador, a instalação para nessa etapa e o que foi criado é revertido.
