@@ -1,6 +1,6 @@
 # Hermes: documentação
 
-Guia de uso do Hermes (antigo PrinterInstall) 1.8.0 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do Hermes (antigo PrinterInstall) 1.8.1 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Na versão 1.6.0 o aplicativo passou a se chamar Hermes e ganhou um novo visual, alinhado aos projetos Talos e Hefesto. O executável agora é `Hermes.exe`; configurações e logs continuam na pasta `%LocalAppData%\PrinterInstall`, então quem já usava o aplicativo não perde nada.
 
@@ -286,6 +286,9 @@ Use **Reiniciar spooler** no Controle de impressoras.
 
 **Usuário ou senha incorretos / domínio não encontrado**  
 Confira o formato do usuário, o domínio nas Configurações e a conexão com a rede da empresa ou VPN. Se o DNS não resolver o domínio, informe um host LDAP alternativo. Fora da empresa, sem domínio, use o ícone de computador da tela de login (**Usar localmente**).
+
+**Não foi possível conectar ao domínio (notebook de outra empresa)**  
+Num computador que pertence a outro domínio, só um controlador do seu domínio consegue validar a senha, pelas portas 389 (LDAP) ou 445 (SMB). Se o DNS não encontrar o domínio, informe o IP de um controlador como host LDAP alternativo; o IP pode ser obtido numa máquina da empresa com `nltest /dsgetdc:<domínio>`. Se a porta 389 não responder (`Test-NetConnection <IP> -Port 389`), a rede ou VPN desse computador está bloqueando o acesso.
 
 **Uso local: a instalação falha pedindo permissão de administrador**  
 Na sessão sem domínio, o Windows pede confirmação (UAC) nas etapas administrativas. Se a conta não for administradora e ninguém informar a senha de um administrador, a instalação para nessa etapa e o que foi criado é revertido.

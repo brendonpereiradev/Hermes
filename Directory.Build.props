@@ -1,7 +1,7 @@
 <Project>
   <!-- Versão única do produto; o workflow de release compara a tag com este valor. -->
   <PropertyGroup>
-    <Version>1.8.0</Version>
+    <Version>1.8.1</Version>
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(Version).0</FileVersion>
   </PropertyGroup>
