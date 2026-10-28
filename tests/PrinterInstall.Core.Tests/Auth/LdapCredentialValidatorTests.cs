@@ -146,6 +146,65 @@ public class LdapCredentialValidatorTests
     }
 
     [Fact]
+    public async Task ValidateAsync_MachineOutsideDomain_LogonUser1326DoesNotReportInvalidCredentials()
+    {
+        LdapValidationResult Unreachable() => LdapValidationResult.Failure("LDAP server unavailable", LoginFailureKind.NetworkUnavailable);
+        var sut = new LdapCredentialValidator(
+            (_, _, _) => Unreachable(),
+            (_, _) => Unreachable(),
+            (_, _) => LdapValidationResult.Failure("LogonUser (Win32 1326)", LoginFailureKind.InvalidCredentials),
+            (_, _) => false);
+
+        var result = await sut.ValidateAsync("laboratorio.test", new NetworkCredential("user", "password", "laboratorio.test"));
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(LoginFailureKind.NetworkUnavailable, result.FailureKind);
+        Assert.Contains("inconclusivo", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_MachineInDomain_LogonUser1326StillReportsInvalidCredentials()
+    {
+        var sut = new LdapCredentialValidator(
+            (_, _, _) => LdapValidationResult.Failure("LDAP server unavailable", LoginFailureKind.NetworkUnavailable),
+            (_, _) => LdapValidationResult.Failure("SMB unavailable", LoginFailureKind.NetworkUnavailable),
+            (_, _) => LdapValidationResult.Failure("LogonUser (Win32 1326)", LoginFailureKind.InvalidCredentials),
+            (_, _) => true);
+
+        var result = await sut.ValidateAsync("test.example", new NetworkCredential("user", "password", "test.example"));
+
+        Assert.Equal(LoginFailureKind.InvalidCredentials, result.FailureKind);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_MachineOutsideDomain_LdapRejectionStillReportsInvalidCredentials()
+    {
+        var sut = new LdapCredentialValidator(
+            (_, _, _) => LdapValidationResult.Failure("LDAP invalid credentials", LoginFailureKind.InvalidCredentials),
+            (_, _) => LdapValidationResult.Failure("SMB unavailable", LoginFailureKind.NetworkUnavailable),
+            (_, _) => LdapValidationResult.Failure("LogonUser (Win32 1326)", LoginFailureKind.InvalidCredentials),
+            (_, _) => false);
+
+        var result = await sut.ValidateAsync("test.example", new NetworkCredential("user", "password", "test.example"));
+
+        Assert.Equal(LoginFailureKind.InvalidCredentials, result.FailureKind);
+    }
+
+    [Theory]
+    [InlineData("laboratorio.test", "laboratorio.test", "outra.example", "OUTRA", false)]
+    [InlineData("10.0.0.5", "LABORATORIO", "outra.example", "OUTRA", false)]
+    [InlineData("laboratorio.test", "laboratorio.test", "", "PC-CAMPO01", false)]
+    [InlineData("laboratorio.test", "laboratorio.test", "laboratorio.test", "LABORATORIO", true)]
+    [InlineData("10.0.0.5", "LABORATORIO", "laboratorio.test", "OTHER", true)]
+    [InlineData("dc01.laboratorio.test", "", "laboratorio.test", "", true)]
+    [InlineData("10.0.0.5", "LABORATORIO", "", "LABORATORIO", true)]
+    public void IsLocalMachineInDomain_ComparesDnsSuffixAndUserDomain(
+        string host, string domain, string machineDnsDomain, string userDomainName, bool expected)
+    {
+        Assert.Equal(expected, LdapCredentialValidator.IsLocalMachineInDomain(host, domain, machineDnsDomain, userDomainName));
+    }
+
+    [Fact]
     public async Task ValidateAsync_FormattedCpf_RetriesSanitizedIdentityInOriginalOrder()
     {
         var attempts = new List<(string Method, string User)>();

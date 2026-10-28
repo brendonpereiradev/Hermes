@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using PrinterInstall.Core.Remote;
 
@@ -18,20 +19,23 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
     private readonly Func<string, NetworkCredential, AuthType, LdapValidationResult> _bind;
     private readonly Func<string, NetworkCredential, LdapValidationResult> _smbAuth;
     private readonly Func<string, NetworkCredential, LdapValidationResult> _logonUser;
+    private readonly Func<string, string?, bool> _isLocalMachineInDomain;
 
     public LdapCredentialValidator()
-        : this(TryBind, TrySmbAuth, TryLogonUser)
+        : this(TryBind, TrySmbAuth, TryLogonUser, IsLocalMachineInDomain)
     {
     }
 
     internal LdapCredentialValidator(
         Func<string, NetworkCredential, AuthType, LdapValidationResult> bind,
         Func<string, NetworkCredential, LdapValidationResult> smbAuth,
-        Func<string, NetworkCredential, LdapValidationResult> logonUser)
+        Func<string, NetworkCredential, LdapValidationResult> logonUser,
+        Func<string, string?, bool>? isLocalMachineInDomain = null)
     {
         _bind = bind;
         _smbAuth = smbAuth;
         _logonUser = logonUser;
+        _isLocalMachineInDomain = isLocalMachineInDomain ?? ((_, _) => true);
     }
 
     public Task<LdapValidationResult> ValidateAsync(
@@ -99,7 +103,7 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
                 return LdapValidationResult.Success(cred);
 
             // 4. Tenta LogonUser Win32 LSA local
-            if (Succeeded(() => _logonUser(host, cred)))
+            if (Succeeded(() => QualifyLogonUserResult(host, cred, _logonUser(host, cred))))
                 return LdapValidationResult.Success(cred);
         }
 
@@ -111,6 +115,60 @@ public sealed class LdapCredentialValidator : ILdapCredentialValidator
         return LdapValidationResult.Failure(
             "Não foi possível validar as credenciais no domínio." + Environment.NewLine + details,
             LdapLoginErrorMessages.SelectFailureKind(failures));
+    }
+
+    /// <summary>
+    /// O LogonUser valida pelo controlador de domínio do próprio computador. Num computador de
+    /// outro domínio (sem relação de confiança) ou de workgroup, o Win32 1326 só diz que o domínio
+    /// local não conhece a conta; não prova que a senha está errada.
+    /// </summary>
+    private LdapValidationResult QualifyLogonUserResult(string host, NetworkCredential credential, LdapValidationResult result)
+    {
+        if (result.IsSuccess
+            || result.FailureKind != LoginFailureKind.InvalidCredentials
+            || _isLocalMachineInDomain(host, credential.Domain))
+            return result;
+
+        var domain = string.IsNullOrWhiteSpace(credential.Domain) ? host : credential.Domain;
+        return LdapValidationResult.Failure(
+            $"{result.ErrorMessage}{Environment.NewLine}" +
+            $"Resultado inconclusivo: este computador não pertence ao domínio {domain}, então o LogonUser local não consegue validar a conta. " +
+            "A validação depende de LDAP (porta 389) ou SMB (porta 445) até um controlador desse domínio.",
+            LoginFailureKind.Unknown);
+    }
+
+    private static bool IsLocalMachineInDomain(string host, string? domain)
+    {
+        string? machineDnsDomain = null;
+        string? userDomainName = null;
+        try { machineDnsDomain = IPGlobalProperties.GetIPGlobalProperties().DomainName; } catch { }
+        try { userDomainName = Environment.UserDomainName; } catch { }
+        return IsLocalMachineInDomain(host, domain, machineDnsDomain, userDomainName);
+    }
+
+    /// <summary>
+    /// Compara o domínio informado (DNS ou NetBIOS) e o host LDAP com o sufixo DNS primário
+    /// do computador e com o domínio do usuário do Windows em uso.
+    /// </summary>
+    internal static bool IsLocalMachineInDomain(string host, string? domain, string? machineDnsDomain, string? userDomainName)
+    {
+        var target = domain?.Trim() ?? "";
+        var cleanHost = host.Trim();
+        var dns = machineDnsDomain?.Trim().TrimEnd('.') ?? "";
+
+        if (dns.Length > 0)
+        {
+            var netbios = dns.Split('.')[0];
+            if (target.Equals(dns, StringComparison.OrdinalIgnoreCase)
+                || target.Equals(netbios, StringComparison.OrdinalIgnoreCase)
+                || cleanHost.Equals(dns, StringComparison.OrdinalIgnoreCase)
+                || cleanHost.EndsWith("." + dns, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return target.Length > 0
+            && !string.IsNullOrWhiteSpace(userDomainName)
+            && target.Equals(userDomainName.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static LdapValidationResult TryBind(string host, NetworkCredential credential, AuthType authType)
