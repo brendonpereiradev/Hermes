@@ -51,4 +51,27 @@ public class StatusBarSegmentsTests
         Assert.InRange(segments.Success + segments.Failure, 0, 1);
         Assert.Equal(1, segments.Success + segments.Failure + segments.Pending, precision: 10);
     }
+
+    [Fact]
+    public void Compute_with_neutral_rows_finished_leaves_nothing_pending()
+    {
+        // Lote terminado com 3 instaladas e 1 que já existia: a barra fica cheia.
+        var segments = StatusBarSegments.Compute(succeeded: 3, failed: 0, total: 4, neutral: 1);
+
+        Assert.Equal(0.75, segments.Success);
+        Assert.Equal(0.25, segments.Neutral);
+        Assert.Equal(0, segments.Pending);
+    }
+
+    [Theory]
+    [InlineData(2, 1, 5, 4)]
+    [InlineData(0, 0, 9, 4)]
+    [InlineData(4, 0, 1, 4)]
+    public void Compute_clamps_neutral_after_success_and_failure(int succeeded, int failed, int neutral, int total)
+    {
+        var segments = StatusBarSegments.Compute(succeeded, failed, total, neutral);
+
+        Assert.InRange(segments.Neutral, 0, 1 - segments.Success - segments.Failure + 1e-10);
+        Assert.Equal(1, segments.Success + segments.Failure + segments.Neutral + segments.Pending, precision: 10);
+    }
 }

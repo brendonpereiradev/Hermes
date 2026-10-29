@@ -40,7 +40,32 @@ public class MainViewModelStatusSummaryTests
         Assert.Equal(2, vm.StatusTargetCount);
         Assert.Equal(1, vm.StatusSucceededCount);
         Assert.Equal(1, vm.StatusFailedCount);
-        Assert.Equal(0, vm.StatusOtherCount);
+        Assert.Equal(0, vm.StatusNeutralCount);
+        Assert.Equal(0, vm.StatusInProgressCount);
+    }
+
+    [Fact]
+    public void StatusSummary_CountsAlreadyExistingAsNeutralNotInProgress()
+    {
+        var vm = CreateViewModel();
+        var installed = new TargetRowViewModel { ComputerName = "PC1", PrinterQueueName = "A" };
+        var existing = new TargetRowViewModel { ComputerName = "PC2", PrinterQueueName = "A" };
+        var running = new TargetRowViewModel { ComputerName = "PC3", PrinterQueueName = "A" };
+        vm.Targets.Add(installed);
+        vm.Targets.Add(existing);
+        vm.Targets.Add(running);
+
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        installed.State = TargetMachineState.CompletedSuccess;
+        existing.State = TargetMachineState.SkippedAlreadyExists;
+        running.State = TargetMachineState.Configuring;
+
+        Assert.Contains(nameof(MainViewModel.StatusNeutralCount), changed);
+        Assert.Equal(1, vm.StatusSucceededCount);
+        Assert.Equal(1, vm.StatusNeutralCount);
+        Assert.Equal(1, vm.StatusInProgressCount);
     }
 
     [Fact]

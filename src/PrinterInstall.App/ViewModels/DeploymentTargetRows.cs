@@ -18,20 +18,25 @@ internal static class DeploymentTargetRows
     private static bool IsFailureState(TargetMachineState s) =>
         TargetStateCategories.Of(s) == TargetStateCategory.Failed;
 
-    /// <summary>Linhas que terminaram com sucesso e com falha, para o resumo do painel de status.</summary>
-    public static (int Succeeded, int Failed) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
+    /// <summary>
+    /// Linhas que terminaram com sucesso, com falha ou sem nenhum dos dois ("Já existe", "Cancelado",
+    /// "Revertido"), para o resumo do painel de status. O resto ainda está em andamento.
+    /// </summary>
+    public static (int Succeeded, int Failed, int Neutral) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
     {
         var succeeded = 0;
         var failed = 0;
+        var neutral = 0;
         foreach (var row in targets)
         {
             switch (TargetStateCategories.Of(row.State))
             {
                 case TargetStateCategory.Succeeded: succeeded++; break;
                 case TargetStateCategory.Failed: failed++; break;
+                case TargetStateCategory.Skipped or TargetStateCategory.Cancelled: neutral++; break;
             }
         }
-        return (succeeded, failed);
+        return (succeeded, failed, neutral);
     }
 
     /// <summary>Um evento sem fila se aplica a todas as linhas do computador.</summary>

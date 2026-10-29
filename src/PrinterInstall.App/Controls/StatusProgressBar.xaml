@@ -23,6 +23,15 @@
                     </TransformGroup>
                 </Rectangle.RenderTransform>
             </Rectangle>
+            <!-- Terminou sem sucesso nem falha ("Já existe", "Cancelado", "Revertido"). -->
+            <Rectangle Fill="{DynamicResource AppStatusBarNeutralBrush}">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="NeutralScale" ScaleX="0"/>
+                        <TranslateTransform x:Name="NeutralOffset"/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
             <!-- Brilho que percorre a barra inteira, visível só no trecho ainda sem resultado. -->
             <Canvas x:Name="ShimmerLayer" Visibility="Collapsed">
                 <Canvas.Clip>

@@ -51,6 +51,8 @@
 
   <!-- Brilho da barra de status enquanto a implantação roda -->
   <SolidColorBrush x:Key="AppStatusBarShimmerBrush" Color="#40FFFFFF"/>
+  <!-- Trecho da barra que terminou sem sucesso nem falha ("Já existe", "Cancelado", "Revertido") -->
+  <SolidColorBrush x:Key="AppStatusBarNeutralBrush" Color="#FF7A8494"/>
 
   <!-- Badges semânticos: mesmo matiz de fundo, cor só no texto e na borda -->
   <SolidColorBrush x:Key="AppBadgeSuccessBackgroundBrush" Color="#FF132620"/>

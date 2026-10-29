@@ -10,7 +10,7 @@ public class DeploymentTargetRowsTests
         new() { ComputerName = computer, PrinterQueueName = queue, ExpectedPortName = $"IP_{queue}", State = state };
 
     [Fact]
-    public void CountOutcomes_SeparatesSuccessFromFailuresAndIgnoresTheRest()
+    public void CountOutcomes_SeparatesSuccessFailuresAndNeutralRows()
     {
         var rows = new[]
         {
@@ -18,13 +18,17 @@ public class DeploymentTargetRowsTests
             Row("PC2", "A", TargetMachineState.Error),
             Row("PC3", "A", TargetMachineState.PrinterIdentityMismatch),
             Row("PC4", "A", TargetMachineState.Configuring),
-            Row("PC5", "A", TargetMachineState.SkippedAlreadyExists)
+            Row("PC5", "A", TargetMachineState.SkippedAlreadyExists),
+            Row("PC6", "A", TargetMachineState.DeployCancelled),
+            Row("PC7", "A", TargetMachineState.RolledBack),
+            Row("PC8", "A", TargetMachineState.RollbackRemovingQueue)
         };
 
-        var (succeeded, failed) = DeploymentTargetRows.CountOutcomes(rows);
+        var (succeeded, failed, neutral) = DeploymentTargetRows.CountOutcomes(rows);
 
         Assert.Equal(1, succeeded);
         Assert.Equal(2, failed);
+        Assert.Equal(3, neutral);
     }
 
     [Fact]

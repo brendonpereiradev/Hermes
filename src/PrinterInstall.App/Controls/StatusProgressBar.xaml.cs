@@ -6,14 +6,16 @@ using System.Windows.Media.Animation;
 namespace PrinterInstall.App.Controls;
 
 /// <summary>
-/// Barra de status da implantação: os trechos de sucesso e falha crescem suavemente a cada
-/// resultado, e um brilho percorre o trecho ainda sem resultado enquanto a implantação roda.
+/// Barra de status da implantação: os trechos de sucesso, falha e neutro crescem suavemente a cada
+/// resultado, e um brilho percorre o trecho ainda em andamento enquanto a implantação roda.
 /// </summary>
 public partial class StatusProgressBar : UserControl
 {
     public static readonly DependencyProperty SucceededCountProperty = RegisterCount(nameof(SucceededCount));
 
     public static readonly DependencyProperty FailedCountProperty = RegisterCount(nameof(FailedCount));
+
+    public static readonly DependencyProperty NeutralCountProperty = RegisterCount(nameof(NeutralCount));
 
     public static readonly DependencyProperty TotalCountProperty = RegisterCount(nameof(TotalCount));
 
@@ -60,6 +62,13 @@ public partial class StatusProgressBar : UserControl
         set => SetValue(FailedCountProperty, value);
     }
 
+    /// <summary>Linhas que terminaram sem sucesso nem falha.</summary>
+    public int NeutralCount
+    {
+        get => (int)GetValue(NeutralCountProperty);
+        set => SetValue(NeutralCountProperty, value);
+    }
+
     public int TotalCount
     {
         get => (int)GetValue(TotalCountProperty);
@@ -79,7 +88,7 @@ public partial class StatusProgressBar : UserControl
     // Respeita "Mostrar animações no Windows" desligado.
     private bool CanAnimate => IsLoaded && SystemParameters.ClientAreaAnimation;
 
-    private StatusBarSegments Segments => StatusBarSegments.Compute(SucceededCount, FailedCount, TotalCount);
+    private StatusBarSegments Segments => StatusBarSegments.Compute(SucceededCount, FailedCount, TotalCount, NeutralCount);
 
     private void OnCountsChanged()
     {
@@ -91,11 +100,13 @@ public partial class StatusProgressBar : UserControl
     {
         var segments = Segments;
         var width = ActualWidth;
-        var done = segments.Success + segments.Failure;
+        var done = segments.Success + segments.Failure + segments.Neutral;
 
         Move(SuccessScale, ScaleTransform.ScaleXProperty, segments.Success, animate);
         Move(FailureScale, ScaleTransform.ScaleXProperty, segments.Failure, animate);
         Move(FailureOffset, TranslateTransform.XProperty, segments.Success * width, animate);
+        Move(NeutralScale, ScaleTransform.ScaleXProperty, segments.Neutral, animate);
+        Move(NeutralOffset, TranslateTransform.XProperty, (segments.Success + segments.Failure) * width, animate);
 
         var pending = new Rect(done * width, 0, segments.Pending * width, ActualHeight);
         if (animate)

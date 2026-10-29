@@ -93,8 +93,11 @@ public partial class MainViewModel : ObservableObject
 
     public int StatusFailedCount => DeploymentTargetRows.CountOutcomes(Targets).Failed;
 
-    /// <summary>Linhas ainda sem resultado de sucesso ou falha (pendentes, em andamento, ignoradas, revertidas).</summary>
-    public int StatusOtherCount => StatusTargetCount - StatusSucceededCount - StatusFailedCount;
+    /// <summary>Linhas que terminaram sem sucesso nem falha ("Já existe", "Cancelado", "Revertido").</summary>
+    public int StatusNeutralCount => DeploymentTargetRows.CountOutcomes(Targets).Neutral;
+
+    /// <summary>Linhas ainda pendentes ou em andamento.</summary>
+    public int StatusInProgressCount => StatusTargetCount - StatusSucceededCount - StatusFailedCount - StatusNeutralCount;
 
     private void OnTargetsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -124,7 +127,8 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(StatusTargetCount));
         OnPropertyChanged(nameof(StatusSucceededCount));
         OnPropertyChanged(nameof(StatusFailedCount));
-        OnPropertyChanged(nameof(StatusOtherCount));
+        OnPropertyChanged(nameof(StatusNeutralCount));
+        OnPropertyChanged(nameof(StatusInProgressCount));
     }
 
     public bool CanRemovePrinterRow => PrinterRows.Count > 1;
