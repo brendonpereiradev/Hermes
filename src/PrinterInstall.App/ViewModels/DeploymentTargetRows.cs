@@ -10,21 +10,13 @@ namespace PrinterInstall.App.ViewModels;
 /// </summary>
 internal static class DeploymentTargetRows
 {
+    /// <summary>Etapa da implantação ainda em andamento. A reversão tem fechamento próprio.</summary>
     public static bool IsIntermediateState(TargetMachineState s) =>
-        s is TargetMachineState.Pending
-            or TargetMachineState.IdentifyingPrinter
-            or TargetMachineState.ValidatingPrinter
-            or TargetMachineState.ContactingRemote
-            or TargetMachineState.ValidatingDriver
-            or TargetMachineState.InstallingDriver
-            or TargetMachineState.DriverInstalledReconfirming
-            or TargetMachineState.Configuring;
+        TargetStateCategories.Of(s) == TargetStateCategory.InProgress
+        && s is not (TargetMachineState.RollbackRemovingQueue or TargetMachineState.RollbackRemovingPort);
 
     private static bool IsFailureState(TargetMachineState s) =>
-        s is TargetMachineState.Error
-            or TargetMachineState.AbortedDriverMissing
-            or TargetMachineState.PrinterIdentityMismatch
-            or TargetMachineState.PrinterIdentityUnknown;
+        TargetStateCategories.Of(s) == TargetStateCategory.Failed;
 
     /// <summary>Linhas que terminaram com sucesso e com falha, para o resumo do painel de status.</summary>
     public static (int Succeeded, int Failed) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
@@ -33,10 +25,11 @@ internal static class DeploymentTargetRows
         var failed = 0;
         foreach (var row in targets)
         {
-            if (row.State == TargetMachineState.CompletedSuccess)
-                succeeded++;
-            else if (IsFailureState(row.State))
-                failed++;
+            switch (TargetStateCategories.Of(row.State))
+            {
+                case TargetStateCategory.Succeeded: succeeded++; break;
+                case TargetStateCategory.Failed: failed++; break;
+            }
         }
         return (succeeded, failed);
     }
@@ -164,9 +157,11 @@ internal static class DeploymentTargetRows
         if (targets.Count == 0)
             return OperationOutcome.None;
 
-        var successCount = targets.Count(t => t.State is TargetMachineState.CompletedSuccess or TargetMachineState.SkippedAlreadyExists);
-        var errorCount = targets.Count(t => IsFailureState(t.State));
-        var cancelCount = targets.Count(t => t.State is TargetMachineState.DeployCancelled or TargetMachineState.RolledBack);
+        // "Já existe" conta como sucesso aqui: a impressora está no computador, que é o que o técnico quer saber.
+        var categories = targets.Select(t => TargetStateCategories.Of(t.State)).ToList();
+        var successCount = categories.Count(c => c is TargetStateCategory.Succeeded or TargetStateCategory.Skipped);
+        var errorCount = categories.Count(c => c == TargetStateCategory.Failed);
+        var cancelCount = categories.Count(c => c == TargetStateCategory.Cancelled);
 
         if (cancelCount > 0)
             return OperationOutcome.Warning;
