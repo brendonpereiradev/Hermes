@@ -1,4 +1,6 @@
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
 
@@ -35,13 +37,106 @@ public class HermesWindow : FluentWindow
     /// </summary>
     private void AlignCaptionButtons()
     {
+        _captionButtons.Clear();
         foreach (var titleBar in Descendants<TitleBar>(this))
         {
             var height = double.IsNaN(titleBar.Height) ? titleBar.ActualHeight : titleBar.Height;
             foreach (var button in Descendants<TitleBarButton>(titleBar))
+            {
                 button.Height = height;
+                _captionButtons.Add(button);
+            }
         }
     }
+
+    protected override void OnContentRendered(EventArgs e)
+    {
+        // O TitleBar registra o hook dele neste evento; registrado depois, este roda antes do dele.
+        base.OnContentRendered(e);
+        HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(CaptionButtonEdgeHook);
+    }
+
+    /// <summary>
+    /// O WPF UI só reconhece o clique dentro do retângulo do botão. A linha de 1 px da moldura acima
+    /// dele (e o canto de cima à direita) aparece pintada junto com o botão, mas responde como borda
+    /// de redimensionar, então o clique ali some. Aqui esses pixels são levados para dentro do botão
+    /// antes de o TitleBar tratar a mensagem. O segundo clique rápido em um botão chega como
+    /// duplo clique, que o WPF UI ignora; ele vira um clique comum.
+    /// </summary>
+    private IntPtr CaptionButtonEdgeHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg is not (WM_NCHITTEST or WM_NCLBUTTONDOWN or WM_NCLBUTTONUP or WM_NCLBUTTONDBLCLK))
+            return IntPtr.Zero;
+
+        var x = (int)(short)(lParam.ToInt64() & 0xFFFF);
+        var y = (int)(short)((lParam.ToInt64() >> 16) & 0xFFFF);
+        var moved = TryMoveOntoCaptionButton(hwnd, ref x, ref y);
+        var isButtonDoubleClick = msg == WM_NCLBUTTONDBLCLK && wParam.ToInt64() is HTMINBUTTON or HTMAXBUTTON or HTCLOSE;
+        if (!moved && !isButtonDoubleClick)
+            return IntPtr.Zero;
+
+        handled = true;
+        var lParamOnButton = (IntPtr)(((y & 0xFFFF) << 16) | (x & 0xFFFF));
+        return SendMessage(hwnd, isButtonDoubleClick ? WM_NCLBUTTONDOWN : msg, wParam, lParamOnButton);
+    }
+
+    private bool TryMoveOntoCaptionButton(IntPtr hwnd, ref int x, ref int y)
+    {
+        if (!GetWindowRect(hwnd, out var window))
+            return false;
+
+        foreach (var button in _captionButtons)
+        {
+            if (!button.IsVisible || button.ActualWidth <= 0 || button.ActualHeight <= 0)
+                continue;
+
+            var topLeft = button.PointToScreen(new Point(0, 0));
+            var bottomRight = button.PointToScreen(new Point(button.ActualWidth, button.ActualHeight));
+            var left = (int)Math.Ceiling(topLeft.X);
+            var top = (int)Math.Ceiling(topLeft.Y);
+            var right = (int)Math.Floor(bottomRight.X);
+            var bottom = (int)Math.Floor(bottomRight.Y);
+
+            // A faixa entre o botão e a borda da janela conta como o próprio botão.
+            var reachTop = top - window.Top <= CaptionEdgeReach ? window.Top : top;
+            var reachRight = window.Right - right <= CaptionEdgeReach ? window.Right : right;
+            if (x < left || x >= reachRight || y < reachTop || y >= bottom)
+                continue;
+            if (x < right && y >= top)
+                return false;
+
+            x = Math.Min(x, right - 1);
+            y = Math.Max(y, top);
+            return true;
+        }
+        return false;
+    }
+
+    private const int WM_NCHITTEST = 0x0084;
+    private const int WM_NCLBUTTONDOWN = 0x00A1;
+    private const int WM_NCLBUTTONUP = 0x00A2;
+    private const int WM_NCLBUTTONDBLCLK = 0x00A3;
+    private const int HTMINBUTTON = 8;
+    private const int HTMAXBUTTON = 9;
+    private const int HTCLOSE = 20;
+
+    /// <summary>Distância máxima, em pixels físicos, entre o botão e a borda da janela que ainda conta como botão.</summary>
+    private const int CaptionEdgeReach = 12;
+
+    private readonly List<TitleBarButton> _captionButtons = new();
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left, Top, Right, Bottom;
+    }
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : DependencyObject
     {
