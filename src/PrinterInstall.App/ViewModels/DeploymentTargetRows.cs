@@ -101,7 +101,11 @@ internal static class DeploymentTargetRows
             case PrinterRemovalProgressState.RollbackSucceeded:
                 SetState(ResolveRollbackRow(targets, e), TargetMachineState.RolledBack, e.Message);
                 break;
+            // Os avisos da reversão são sobre a porta (não verificada ou não removida): a fila já saiu,
+            // então a linha está revertida e o aviso fica na mensagem, sem contar como falha.
             case PrinterRemovalProgressState.Warning:
+                SetState(ResolveRollbackRow(targets, e), TargetMachineState.RolledBack, e.Message);
+                break;
             case PrinterRemovalProgressState.Error:
                 SetState(ResolveRollbackRow(targets, e), TargetMachineState.Error, e.Message);
                 break;

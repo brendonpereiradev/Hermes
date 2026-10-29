@@ -68,6 +68,33 @@ public class DeploymentTargetRowsTests
     }
 
     [Fact]
+    public void RollbackWarning_MarksRowRolledBackAndKeepsTheMessage()
+    {
+        var rows = new[] { Row("PC1", "A", TargetMachineState.RollbackRemovingPort) };
+
+        DeploymentTargetRows.ApplyRollbackProgress(rows,
+            new PrinterRemovalProgressEvent("PC1", PrinterRemovalProgressState.Warning, "porta não removida", PortName: "IP_A"),
+            new DeploymentRollbackJournal());
+
+        Assert.Equal(TargetMachineState.RolledBack, rows[0].State);
+        Assert.Equal("porta não removida", rows[0].Message);
+        Assert.Equal(0, DeploymentTargetRows.CountOutcomes(rows).Failed);
+    }
+
+    [Fact]
+    public void RollbackError_MarksRowAsError()
+    {
+        var rows = new[] { Row("PC1", "A", TargetMachineState.RollbackRemovingQueue) };
+
+        DeploymentTargetRows.ApplyRollbackProgress(rows,
+            new PrinterRemovalProgressEvent("PC1", PrinterRemovalProgressState.Error, "acesso negado", "A"),
+            new DeploymentRollbackJournal());
+
+        Assert.Equal(TargetMachineState.Error, rows[0].State);
+        Assert.Equal(1, DeploymentTargetRows.CountOutcomes(rows).Failed);
+    }
+
+    [Fact]
     public void FinalizeAfterRollback_ClosesRollbackAndInProgressRows()
     {
         var rows = new[]

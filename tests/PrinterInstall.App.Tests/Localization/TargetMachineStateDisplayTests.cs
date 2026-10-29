@@ -52,9 +52,11 @@ public class TargetMachineStateDisplayTests
         Assert.Equal("Conectando", TargetMachineStateDisplay.GetDisplay(TargetMachineState.ContactingRemote));
     }
 
-    [Fact]
-    public void RollbackRemovingQueue_returns_Portuguese_label()
+    [Theory]
+    [InlineData(TargetMachineState.RollbackRemovingQueue, "Revertendo: fila")]
+    [InlineData(TargetMachineState.RollbackRemovingPort, "Revertendo: porta")]
+    public void RollbackStates_SayTheyAreRollingBack(TargetMachineState state, string label)
     {
-        Assert.Equal("Removendo fila", TargetMachineStateDisplay.GetDisplay(TargetMachineState.RollbackRemovingQueue));
+        Assert.Equal(label, TargetMachineStateDisplay.GetDisplay(state));
     }
 }
