@@ -62,22 +62,29 @@ public class HermesWindow : FluentWindow
     /// de redimensionar, então o clique ali some. Aqui esses pixels são levados para dentro do botão
     /// antes de o TitleBar tratar a mensagem. O segundo clique rápido em um botão chega como
     /// duplo clique, que o WPF UI ignora; ele vira um clique comum.
+    /// <para>
+    /// O Windows entrega a posição do mouse sem extensão de sinal. Num monitor acima do principal
+    /// (Y negativo) o valor passa de <see cref="int.MaxValue"/>, o <c>ToInt32</c> do WPF UI estoura e os
+    /// botões da barra deixam de acender e de clicar. A posição é reenviada com o sinal estendido.
+    /// </para>
     /// </summary>
     private IntPtr CaptionButtonEdgeHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         if (msg is not (WM_NCHITTEST or WM_NCLBUTTONDOWN or WM_NCLBUTTONUP or WM_NCLBUTTONDBLCLK))
             return IntPtr.Zero;
 
-        var x = (int)(short)(lParam.ToInt64() & 0xFFFF);
-        var y = (int)(short)((lParam.ToInt64() >> 16) & 0xFFFF);
+        var raw = lParam.ToInt64();
+        var x = (int)(short)(raw & 0xFFFF);
+        var y = (int)(short)((raw >> 16) & 0xFFFF);
         var moved = TryMoveOntoCaptionButton(hwnd, ref x, ref y);
         var isButtonDoubleClick = msg == WM_NCLBUTTONDBLCLK && wParam.ToInt64() is HTMINBUTTON or HTMAXBUTTON or HTCLOSE;
-        if (!moved && !isButtonDoubleClick)
+        var needsSignExtension = raw is > int.MaxValue or < int.MinValue;
+        if (!moved && !isButtonDoubleClick && !needsSignExtension)
             return IntPtr.Zero;
 
         handled = true;
-        var lParamOnButton = (IntPtr)(((y & 0xFFFF) << 16) | (x & 0xFFFF));
-        return SendMessage(hwnd, isButtonDoubleClick ? WM_NCLBUTTONDOWN : msg, wParam, lParamOnButton);
+        var signExtendedLParam = (IntPtr)((y << 16) | (x & 0xFFFF));
+        return SendMessage(hwnd, isButtonDoubleClick ? WM_NCLBUTTONDOWN : msg, wParam, signExtendedLParam);
     }
 
     private bool TryMoveOntoCaptionButton(IntPtr hwnd, ref int x, ref int y)
