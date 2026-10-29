@@ -170,6 +170,7 @@
                                    Foreground="{DynamicResource AppTextMutedBrush}"
                                    FontSize="13"
                                    VerticalAlignment="Center"
+                                   Margin="4,0,0,0"
                                    IsHitTestVisible="False"
                                    Visibility="{Binding UserName, Converter={StaticResource StringNullOrEmptyToVis}}"/>
                         <TextBox x:Name="UserNameTextBox"
@@ -197,6 +198,7 @@
                                    Foreground="{DynamicResource AppTextMutedBrush}"
                                    FontSize="13"
                                    VerticalAlignment="Center"
+                                   Margin="4,0,0,0"
                                    IsHitTestVisible="False"
                                    Visibility="{Binding Password, Converter={StaticResource StringNullOrEmptyToVis}}"/>
                         <PasswordBox x:Name="PasswordBox"
