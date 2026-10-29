@@ -108,4 +108,37 @@ public class DeploymentTargetRowsTests
         Assert.Contains("acesso negado", summary);
         Assert.Equal(string.Empty, DeploymentTargetRows.BuildSummaryText(Array.Empty<TargetRowViewModel>()));
     }
+
+    [Fact]
+    public void BuildSummaryText_ReportsDriverMissingAsSuch()
+    {
+        // Antes, "Driver ausente" aparecia no resumo como "cancelado(s)".
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.AbortedDriverMissing),
+            Row("PC2", "A", TargetMachineState.Error)
+        };
+
+        var summary = DeploymentTargetRows.BuildSummaryText(rows);
+
+        Assert.Contains("1 erro(s), 1 driver(s) ausente(s)", summary);
+        Assert.DoesNotContain("cancelado", summary);
+    }
+
+    [Fact]
+    public void BuildSummaryText_SeparatesRolledBackFromCancelledAndInProgress()
+    {
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.RolledBack),
+            Row("PC2", "A", TargetMachineState.DeployCancelled),
+            Row("PC3", "A", TargetMachineState.Configuring)
+        };
+
+        var summary = DeploymentTargetRows.BuildSummaryText(rows);
+
+        Assert.Contains("Revertido(s) nesta execução: 1", summary);
+        Assert.Contains("após cancelamento (sem reversão ou antes da reversão): 1", summary);
+        Assert.Contains("Outros estados: 1", summary);
+    }
 }

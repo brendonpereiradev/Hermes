@@ -116,36 +116,35 @@ internal static class DeploymentTargetRows
         var ok = 0;
         var skipped = 0;
         var err = 0;
-        var aborted = 0;
+        var driverMissing = 0;
         var rolledBack = 0;
         var deployCancelled = 0;
-        var other = 0;
+        var inProgress = 0;
         foreach (var t in targets)
         {
-            switch (t.State)
+            switch (TargetStateCategories.Of(t.State))
             {
-                case TargetMachineState.CompletedSuccess: ok++; break;
-                case TargetMachineState.SkippedAlreadyExists: skipped++; break;
-                case TargetMachineState.Error: err++; break;
-                case TargetMachineState.PrinterIdentityMismatch: err++; break;
-                case TargetMachineState.PrinterIdentityUnknown: err++; break;
-                case TargetMachineState.AbortedDriverMissing: aborted++; break;
-                case TargetMachineState.RolledBack: rolledBack++; break;
-                case TargetMachineState.DeployCancelled: deployCancelled++; break;
-                default: other++; break;
+                case TargetStateCategory.Succeeded: ok++; break;
+                case TargetStateCategory.Skipped: skipped++; break;
+                // "Driver ausente" tem contagem própria no resumo; as outras falhas somam como erro.
+                case TargetStateCategory.Failed when t.State == TargetMachineState.AbortedDriverMissing: driverMissing++; break;
+                case TargetStateCategory.Failed: err++; break;
+                case TargetStateCategory.Cancelled when t.State == TargetMachineState.RolledBack: rolledBack++; break;
+                case TargetStateCategory.Cancelled: deployCancelled++; break;
+                case TargetStateCategory.InProgress: inProgress++; break;
             }
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, aborted));
-        if (other > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, other));
+        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, driverMissing));
+        if (inProgress > 0)
+            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, inProgress));
         if (rolledBack > 0)
             sb.AppendLine(string.Format(UiStrings.Main_SummaryRolledBackFormat, rolledBack));
         if (deployCancelled > 0)
             sb.AppendLine(string.Format(UiStrings.Main_SummaryDeployCancelledFormat, deployCancelled));
 
-        if (err > 0 || aborted > 0)
+        if (err > 0 || driverMissing > 0)
         {
             foreach (var t in targets.Where(x => IsFailureState(x.State)))
             {
