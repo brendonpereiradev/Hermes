@@ -4,7 +4,7 @@
   <sys:String x:Key="Main_WindowTitle">Hermes</sys:String>
   <sys:String x:Key="Main_ComputersLabel">Computadores alvo</sys:String>
   <sys:String x:Key="Main_ComputersPlaceholder">Um nome ou IP por linha, ex.: PC-RECEPCAO-01</sys:String>
-  <sys:String x:Key="Main_ComputerSinglePlaceholder">IP ou nome do computador, ex.: 192.168.0.120</sys:String>
+  <sys:String x:Key="Main_ComputerSinglePlaceholder">IP ou nome do computador, ex.: PC-RECEPCAO-01</sys:String>
   <sys:String x:Key="Main_ComputersModeSingle">Um computador</sys:String>
   <sys:String x:Key="Main_ComputersModeList">Lista</sys:String>
   <sys:String x:Key="Main_ComputersCountOne">computador</sys:String>
