@@ -49,6 +49,9 @@
   <SolidColorBrush x:Key="AppTableRowSelectedBrush" Color="#FF20262F"/>
   <SolidColorBrush x:Key="AppTableDividerBrush" Color="#FF20252D"/>
 
+  <!-- Brilho da barra de status enquanto a implantação roda -->
+  <SolidColorBrush x:Key="AppStatusBarShimmerBrush" Color="#40FFFFFF"/>
+
   <!-- Badges semânticos: mesmo matiz de fundo, cor só no texto e na borda -->
   <SolidColorBrush x:Key="AppBadgeSuccessBackgroundBrush" Color="#FF132620"/>
   <SolidColorBrush x:Key="AppBadgeSuccessBorderBrush" Color="#FF225C44"/>
