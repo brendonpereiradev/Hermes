@@ -22,7 +22,6 @@
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:TargetMachineStateToBrushConverter x:Key="StateBrushConverter"/>
-        <conv:CountToStarGridLengthConverter x:Key="CountToStar"/>
         <conv:StringNullOrWhiteSpaceToVisibilityConverter x:Key="EmptyToVis"/>
 
         <!-- Pincéis para neutralizar seleção azul padrão do WPF -->
@@ -345,19 +344,12 @@
                                     <TextBlock Style="{StaticResource FigureTextStyle}" Text="{Binding StatusTargetCount}"/>
                                     <TextBlock Style="{StaticResource CaptionTextStyle}" Text="{DynamicResource Main_StatusSummarySucceeded}" Margin="5,1,0,0"/>
                                 </StackPanel>
-                                <Border Grid.Column="2" Height="6" CornerRadius="2" VerticalAlignment="Center"
-                                        Background="{DynamicResource AppSurfaceCardBorderBrush}" ClipToBounds="True"
-                                        Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="{Binding StatusSucceededCount, Converter={StaticResource CountToStar}}"/>
-                                            <ColumnDefinition Width="{Binding StatusFailedCount, Converter={StaticResource CountToStar}}"/>
-                                            <ColumnDefinition Width="{Binding StatusOtherCount, Converter={StaticResource CountToStar}}"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle Grid.Column="0" Fill="{DynamicResource AppBadgeSuccessForegroundBrush}"/>
-                                        <Rectangle Grid.Column="1" Fill="{DynamicResource AppBadgeDangerForegroundBrush}"/>
-                                    </Grid>
-                                </Border>
+                                <appControls:StatusProgressBar Grid.Column="2" Height="6" VerticalAlignment="Center"
+                                                               SucceededCount="{Binding StatusSucceededCount}"
+                                                               FailedCount="{Binding StatusFailedCount}"
+                                                               TotalCount="{Binding StatusTargetCount}"
+                                                               IsRunning="{Binding IsDeployRunning}"
+                                                               Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}"/>
                             </Grid>
                             <Grid>
                                 <DataGrid Style="{StaticResource ModernStatusDataGridStyle}"

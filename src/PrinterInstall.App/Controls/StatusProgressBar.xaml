@@ -1,0 +1,48 @@
+<UserControl x:Class="PrinterInstall.App.Controls.StatusProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False"
+             IsTabStop="False">
+    <!--
+      Barra dividida por resultado. Os trechos são retângulos da largura toda, escalados a partir
+      da esquerda, porque o WPF não anima larguras de coluna (GridLength).
+    -->
+    <Border CornerRadius="2" ClipToBounds="True"
+            Background="{DynamicResource AppSurfaceCardBorderBrush}">
+        <Grid>
+            <Rectangle Fill="{DynamicResource AppBadgeSuccessForegroundBrush}">
+                <Rectangle.RenderTransform>
+                    <ScaleTransform x:Name="SuccessScale" ScaleX="0"/>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Rectangle Fill="{DynamicResource AppBadgeDangerForegroundBrush}">
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="FailureScale" ScaleX="0"/>
+                        <TranslateTransform x:Name="FailureOffset"/>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <!-- Brilho que percorre a barra inteira, visível só no trecho ainda sem resultado. -->
+            <Canvas x:Name="ShimmerLayer" Visibility="Collapsed">
+                <Canvas.Clip>
+                    <RectangleGeometry x:Name="PendingClip"/>
+                </Canvas.Clip>
+                <Rectangle x:Name="Shimmer"
+                           Height="{Binding ActualHeight, ElementName=ShimmerLayer}"
+                           Fill="{DynamicResource AppStatusBarShimmerBrush}">
+                    <Rectangle.OpacityMask>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Offset="0" Color="Transparent"/>
+                            <GradientStop Offset="0.5" Color="Black"/>
+                            <GradientStop Offset="1" Color="Transparent"/>
+                        </LinearGradientBrush>
+                    </Rectangle.OpacityMask>
+                    <Rectangle.RenderTransform>
+                        <TranslateTransform x:Name="ShimmerOffset"/>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Canvas>
+        </Grid>
+    </Border>
+</UserControl>
