@@ -19,6 +19,7 @@
         Background="{DynamicResource AppCanvasBackgroundBrush}"
         TextElement.Foreground="{DynamicResource AppTextPrimaryBrush}">
     <appControls:HermesWindow.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBool"/>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
         <controls:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <conv:TargetMachineStateToBrushConverter x:Key="StateBrushConverter"/>
@@ -75,6 +76,59 @@
                     <Setter Property="Text" Value="{DynamicResource Main_ComputersInvalidOne}"/>
                 </DataTrigger>
             </Style.Triggers>
+        </Style>
+
+        <!-- Seletor segmentado (Um computador | Lista): contorno do OutlineButtonStyle, opção marcada em acento suave. -->
+        <Style x:Key="SegmentedGroupStyle" TargetType="Border">
+            <Setter Property="BorderBrush" Value="{DynamicResource AppLineStrongBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="2"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="BorderBrush" Value="{DynamicResource AppSurfaceCardBorderBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SegmentedOptionStyle" TargetType="RadioButton">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Chip"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"
+                                Padding="10,4">
+                            <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="False"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource AppSurfaceHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AppBrandAccentBrush}"/>
+                                <Setter TargetName="Chip" Property="BorderThickness" Value="1"/>
+                                <Setter TargetName="Chip" Property="Padding" Value="9,3"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource AppBadgeInfoForegroundBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource AppBadgeInfoBackgroundBrush}"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource AppTextMutedBrush}"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Estilos para a tabela moderna de status -->
@@ -271,7 +325,20 @@
 
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="2*" MinHeight="130"/>
+                        <!-- O card encolhe para o campo único; no modo lista, divide a altura com o Status. -->
+                        <RowDefinition>
+                            <RowDefinition.Style>
+                                <Style TargetType="RowDefinition">
+                                    <Setter Property="Height" Value="Auto"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsListMode}" Value="True">
+                                            <Setter Property="Height" Value="2*"/>
+                                            <Setter Property="MinHeight" Value="130"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RowDefinition.Style>
+                        </RowDefinition>
                         <RowDefinition Height="12"/>
                         <RowDefinition Height="3*" MinHeight="140"/>
                     </Grid.RowDefinitions>
@@ -297,30 +364,64 @@
                                         <TextBlock Style="{StaticResource InvalidCountUnitStyle}" Margin="4,0,0,0"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <ui:Button Grid.Column="2"
-                                           Content="{DynamicResource Main_AddThisComputer}"
-                                           Icon="{ui:SymbolIcon Desktop24}"
-                                           Command="{Binding AddThisComputerCommand}"
-                                           Style="{StaticResource OutlineButtonStyle}"
-                                           Padding="10,5"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                    <!-- Um computador (padrão, como o IP da impressora) ou uma lista colada. -->
+                                    <Border Style="{StaticResource SegmentedGroupStyle}" Margin="0,0,8,0"
+                                            IsEnabled="{Binding IsLocalOnly, Converter={StaticResource InverseBool}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton GroupName="ComputerInputMode"
+                                                         Style="{StaticResource SegmentedOptionStyle}"
+                                                         Content="{DynamicResource Main_ComputersModeSingle}"
+                                                         IsChecked="{Binding IsSingleMode}"/>
+                                            <RadioButton GroupName="ComputerInputMode"
+                                                         Style="{StaticResource SegmentedOptionStyle}"
+                                                         Content="{DynamicResource Main_ComputersModeList}"
+                                                         IsChecked="{Binding IsListMode}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ui:Button Content="{DynamicResource Main_AddThisComputer}"
+                                               Icon="{ui:SymbolIcon Desktop24}"
+                                               Command="{Binding AddThisComputerCommand}"
+                                               Style="{StaticResource OutlineButtonStyle}"
+                                               Padding="10,5"/>
+                                </StackPanel>
                             </Grid>
                             <!-- Nomes digitados em Consolas; a instrução, na fonte da interface (o placeholder do WPF UI herdaria a Consolas). -->
                             <Grid>
-                                <ui:TextBox Text="{Binding ComputersText, UpdateSourceTrigger=PropertyChanged}"
-                                            IsReadOnly="{Binding IsLocalOnly}"
-                                            AcceptsReturn="True"
-                                            FontFamily="{StaticResource AppMonoFontFamily}"
-                                            FontSize="13"
-                                            Padding="12,10"
-                                            TextWrapping="Wrap"
-                                            VerticalScrollBarVisibility="Auto"
-                                            VerticalContentAlignment="Top"/>
-                                <TextBlock Text="{DynamicResource Main_ComputersPlaceholder}"
-                                           Margin="15,11,12,0"
-                                           FontSize="13"
-                                           Foreground="{DynamicResource TextControlPlaceholderForeground}"
-                                           IsHitTestVisible="False"
-                                           Visibility="{Binding ComputersText, Converter={StaticResource EmptyToVis}}"/>
+                                <Grid Visibility="{Binding IsSingleMode, Converter={StaticResource BoolToVis}}">
+                                    <ui:TextBox x:Name="SingleComputerBox"
+                                                Text="{Binding SingleComputerText, UpdateSourceTrigger=PropertyChanged}"
+                                                IsReadOnly="{Binding IsLocalOnly}"
+                                                DataObject.Pasting="SingleComputerBox_OnPasting"
+                                                FontFamily="{StaticResource AppMonoFontFamily}"
+                                                FontSize="13"
+                                                Padding="12,8"/>
+                                    <TextBlock Text="{DynamicResource Main_ComputerSinglePlaceholder}"
+                                               Margin="15,0,12,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextControlPlaceholderForeground}"
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding SingleComputerText, Converter={StaticResource EmptyToVis}}"/>
+                                </Grid>
+                                <Grid Visibility="{Binding IsListMode, Converter={StaticResource BoolToVis}}">
+                                    <ui:TextBox x:Name="ListComputersBox"
+                                                Text="{Binding ListComputersText, UpdateSourceTrigger=PropertyChanged}"
+                                                IsReadOnly="{Binding IsLocalOnly}"
+                                                AcceptsReturn="True"
+                                                FontFamily="{StaticResource AppMonoFontFamily}"
+                                                FontSize="13"
+                                                Padding="12,10"
+                                                TextWrapping="Wrap"
+                                                VerticalScrollBarVisibility="Auto"
+                                                VerticalContentAlignment="Top"/>
+                                    <TextBlock Text="{DynamicResource Main_ComputersPlaceholder}"
+                                               Margin="15,11,12,0"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextControlPlaceholderForeground}"
+                                               IsHitTestVisible="False"
+                                               Visibility="{Binding ListComputersText, Converter={StaticResource EmptyToVis}}"/>
+                                </Grid>
                             </Grid>
                         </DockPanel>
                     </Border>

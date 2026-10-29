@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Threading;
 using PrinterInstall.App.ViewModels;
+using PrinterInstall.Core.Validation;
 
 namespace PrinterInstall.App.Views;
 
@@ -16,6 +18,29 @@ public partial class MainWindow
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         EnsureWindowFitsScreen();
+    }
+
+    /// <summary>
+    /// O campo único guardaria só a primeira linha de uma lista colada; com mais de um nome,
+    /// o texto vai para o modo lista e o foco segue para a caixa da lista.
+    /// </summary>
+    private void SingleComputerBox_OnPasting(object sender, DataObjectPastingEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm || e.DataObject.GetData(DataFormats.UnicodeText) is not string pasted)
+            return;
+
+        var box = SingleComputerBox;
+        var result = box.Text.Remove(box.SelectionStart, box.SelectionLength).Insert(box.SelectionStart, pasted);
+        if (ComputerNameListParser.Parse(result).Count <= 1)
+            return;
+
+        e.CancelCommand();
+        vm.ComputersText = result;
+        Dispatcher.InvokeAsync(() =>
+        {
+            ListComputersBox.Focus();
+            ListComputersBox.CaretIndex = ListComputersBox.Text.Length;
+        }, DispatcherPriority.Loaded);
     }
 
     /// <summary>

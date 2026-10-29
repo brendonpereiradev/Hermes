@@ -150,11 +150,74 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Campo de um computador só (como o IP da impressora), usado fora do modo lista.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ComputersText))]
     [NotifyPropertyChangedFor(nameof(ComputerCount))]
     [NotifyPropertyChangedFor(nameof(InvalidComputerCount))]
     [NotifyPropertyChangedFor(nameof(HasInvalidComputers))]
-    private string _computersText = "";
+    private string _singleComputerText = "";
+
+    /// <summary>Caixa "um computador por linha" do modo lista.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ComputersText))]
+    [NotifyPropertyChangedFor(nameof(ComputerCount))]
+    [NotifyPropertyChangedFor(nameof(InvalidComputerCount))]
+    [NotifyPropertyChangedFor(nameof(HasInvalidComputers))]
+    private string _listComputersText = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSingleMode))]
+    [NotifyPropertyChangedFor(nameof(ComputersText))]
+    [NotifyPropertyChangedFor(nameof(ComputerCount))]
+    [NotifyPropertyChangedFor(nameof(InvalidComputerCount))]
+    [NotifyPropertyChangedFor(nameof(HasInvalidComputers))]
+    private bool _isListMode;
+
+    public bool IsSingleMode
+    {
+        get => !IsListMode;
+        set => IsListMode = !value;
+    }
+
+    /// <summary>
+    /// Ao trocar de modo, leva o computador digitado para o outro campo se ele estiver vazio;
+    /// fora isso, cada modo guarda o próprio texto.
+    /// </summary>
+    partial void OnIsListModeChanged(bool value)
+    {
+        if (value)
+        {
+            if (string.IsNullOrWhiteSpace(ListComputersText) && !string.IsNullOrWhiteSpace(SingleComputerText))
+                ListComputersText = SingleComputerText.Trim();
+            return;
+        }
+
+        var listed = ComputerNameListParser.Parse(ListComputersText);
+        if (string.IsNullOrWhiteSpace(SingleComputerText) && listed.Count == 1)
+            SingleComputerText = listed[0];
+    }
+
+    /// <summary>
+    /// Computadores que a implantação usa: o campo único ou a lista, conforme o modo.
+    /// Texto com mais de um nome (colado no campo único, ou "Adicionar este PC" sobre um nome remoto) passa para o modo lista.
+    /// </summary>
+    public string ComputersText
+    {
+        get => IsListMode ? ListComputersText : SingleComputerText;
+        set
+        {
+            if (IsListMode || ComputerNameListParser.Parse(value).Count > 1)
+            {
+                ListComputersText = value;
+                IsListMode = true;
+            }
+            else
+            {
+                SingleComputerText = value;
+            }
+        }
+    }
 
     public bool HasInvalidComputers => InvalidComputerCount > 0;
 

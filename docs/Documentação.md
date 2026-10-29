@@ -139,8 +139,10 @@ As configurações valem de imediato e ficam em `%LocalAppData%\PrinterInstall\s
 
 ### 4.1 Computadores alvo
 
-- Digite no campo **Computadores alvo** um nome de rede ou IP por linha. É possível colar uma lista inteira.
-- **Adicionar este PC** inclui a máquina local (marcada como "(este PC)").
+- Por padrão, o seletor fica em **Um computador**: digite o IP ou nome de rede de uma única máquina, como no campo IP da impressora.
+- Para vários computadores, escolha **Lista** e informe um nome ou IP por linha. Colar uma lista com mais de um nome no campo único passa para **Lista** automaticamente.
+- Cada modo guarda o próprio texto; a implantação usa o modo selecionado. Ao trocar de modo com o outro campo vazio, o computador já digitado é levado junto.
+- **Adicionar este PC** inclui a máquina local (marcada como "(este PC)"). Se o campo único já tiver outro computador, os dois vão para **Lista**.
 - Na sessão local (sem domínio), o campo já vem com este PC e fica travado; um nome remoto termina em erro sem ser contatado.
 - O contador ao lado do título mostra quantos computadores foram reconhecidos e quantos estão inválidos.
 
@@ -157,13 +159,13 @@ Use **Adicionar impressora** para criar mais filas na mesma execução e **Remov
 
 ### 4.3 Verificações antes de implantar
 
-Ao clicar em **Implantar**, o aplicativo valida os dados e pode exibir avisos:
+Ao clicar em **Instalar**, o aplicativo valida os dados e pode exibir avisos:
 
 | Aviso | Quando ocorre | O que fazer |
 |---|---|---|
-| Inversão de campos detectada | O nome parece um IP e o IP parece um nome. | **Inverter e implantar** corrige automaticamente; **Cancelar e corrigir** volta ao formulário. |
+| Inversão de campos detectada | O nome parece um IP e o IP parece um nome. | **Inverter e instalar** corrige automaticamente; **Cancelar e corrigir** volta ao formulário. |
 | Possível divergência de modelo | O nome da fila sugere outro tipo (ex.: ETIQ ou PULSEIRA com marca de folha comum). | Confira a marca. **Prosseguir mesmo assim** ou **Cancelar e corrigir**. |
-| Validação da impressora bloqueou a implantação | A impressora no IP informado é de outra marca/modelo, ou não pôde ser identificada com segurança. | Confira o IP e o modelo selecionado. Nenhuma alteração é feita nas estações. |
+| Validação da impressora bloqueou a instalação | A impressora no IP informado é de outra marca/modelo, ou não pôde ser identificada com segurança. | Confira o IP e o modelo selecionado. Nenhuma alteração é feita nas estações. |
 
 As caixas de aviso e de resumo não têm barra de título: feche pelos botões da própria caixa ou com **Esc**, e arraste pelo corpo da caixa para movê-la.
 
@@ -262,7 +264,7 @@ Epson, Lexmark e Brother imprimem uma folha (PCL) com data, hora e IP. A Gainsch
 
 1. Copie o executável para uma pasta local do computador e abra como administrador.
 2. Faça login, clique em **Adicionar este PC** e deixe apenas essa máquina na lista.
-3. Configure as impressoras, clique em **Implantar** e aguarde o resumo final, mesmo em caso de erro.
+3. Configure as impressoras, clique em **Instalar** e aguarde o resumo final, mesmo em caso de erro.
 4. Clique em **Exportar log** antes de fechar e envie o .txt ao suporte.
 
 ---
@@ -275,7 +277,7 @@ Estação desligada, sem rede, firewall bloqueando ou conta sem privilégio admi
 **A impressora não respondeu na porta 9100**  
 Impressora desligada, IP errado, cabo desconectado ou VLAN diferente. Valide com **Testar impressora** e verifique o LED de rede da impressora.
 
-**Validação da impressora bloqueou a implantação**  
+**Validação da impressora bloqueou a instalação**  
 O equipamento no IP é de outra marca/modelo ou não foi identificado. Confira o IP e o modelo selecionado.
 
 **Gainscha imprime uma etiqueta e pula outras em branco**  
