@@ -132,7 +132,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
         await sut.RunAsync(MakeRequest(), new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
         var aborted = Assert.Single(events.Where(e => e is { State: TargetMachineState.AbortedDriverMissing, PrinterQueueName: "P1" }));
-        Assert.Contains("Instalação não suportada neste canal", aborted.Message);
+        Assert.Contains("instalação não suportada neste canal", aborted.Message);
     }
 
     [Fact]
@@ -240,7 +240,7 @@ public class PrinterDeploymentOrchestratorDriverInstallTests
 
         // Garante que a mensagem de status da tabela NUNCA recebeu a mensagem técnica de WMI
         Assert.DoesNotContain(events, e => e.Message.Contains("WMI Win32_Process"));
-        Assert.Contains(events, e => e.State == TargetMachineState.InstallingDriver && e.Message == "Instalando driver");
+        Assert.Contains(events, e => e.State == TargetMachineState.InstallingDriver && e.Message == "Instalando driver…");
 
         // Garante que a mensagem técnica foi devidamente enviada para o log de diagnóstico
         Assert.Contains(diagnosticLogs, l => l.Contains("WMI Win32_Process retornou 8"));

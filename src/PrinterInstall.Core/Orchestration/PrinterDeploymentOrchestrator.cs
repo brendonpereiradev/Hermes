@@ -15,6 +15,10 @@ public sealed class PrinterDeploymentOrchestrator
     public const int DefaultMaxDegreeOfParallelism = 4;
     private static readonly TimeSpan SpoolerSettleDelay = TimeSpan.FromSeconds(2);
 
+    // Mensagens de linha: frase curta, sem ponto final; "…" só no que ainda está em andamento.
+    private const string NoCompatibleDriverMessage = "Nenhum driver compatível instalado";
+    private const string LabelPresetMissingMessage = "Tamanho de etiqueta não selecionado";
+
     private readonly IRemotePrinterOperations _remote;
     private readonly ILocalDriverPackageCatalog _localDrivers;
     private readonly IDirectRawPrinterTestService _rawTestService;
@@ -179,7 +183,7 @@ public sealed class PrinterDeploymentOrchestrator
 
             foreach (var computer in request.TargetComputerNames)
                 progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.IdentifyingPrinter,
-                    $"Identificando impressora em {host}", definition.DisplayName));
+                    $"Identificando impressora em {host}…", definition.DisplayName));
 
             try
             {
@@ -223,12 +227,12 @@ public sealed class PrinterDeploymentOrchestrator
             var state = item.Compatible ? TargetMachineState.DeployCancelled :
                 item.identity.ConflictingEvidence || item.identity.Brand is null || string.IsNullOrWhiteSpace(item.identity.Model)
                     ? TargetMachineState.PrinterIdentityUnknown : TargetMachineState.PrinterIdentityMismatch;
-            var message = item.Compatible ? "Implantação bloqueada por outra impressora." :
-                item.identity.ConflictingEvidence ? "Identificação conflitante." :
-                state == TargetMachineState.PrinterIdentityUnknown ? "Modelo da impressora não identificado." :
+            var message = item.Compatible ? "Bloqueada por outra impressora da lista" :
+                item.identity.ConflictingEvidence ? "Identificação conflitante" :
+                state == TargetMachineState.PrinterIdentityUnknown ? "Modelo da impressora não identificado" :
                 item.identity.Brand != item.Definition.Brand
-                    ? $"{item.identity.Brand} ≠ {item.Definition.Brand}"
-                    : $"Modelo {item.identity.Model} não homologado.";
+                    ? $"Identificada como {item.identity.Brand}, selecionada como {item.Definition.Brand}"
+                    : $"Modelo {item.identity.Model} não homologado";
             foreach (var computer in request.TargetComputerNames)
                 progress.Report(new DeploymentProgressEvent(computer, state, message, item.Definition.DisplayName,
                     item.Compatible ? null : item.Message));
@@ -248,14 +252,14 @@ public sealed class PrinterDeploymentOrchestrator
         CancellationToken cancellationToken,
         IProgress<string>? diagnosticLog = null)
     {
-        progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ContactingRemote, "Conectando", null));
+        progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ContactingRemote, "Conectando ao computador…", null));
 
         var (isReachable, reachabilityError) = await _reachabilityChecker.CheckReachabilityAsync(computer, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         if (!isReachable)
         {
             diagnosticLog?.Report($"{computer}: conectividade indisponível: {reachabilityError}");
-            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, "Host inacessível", null));
+            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.Error, "Computador inacessível na rede", null));
             return;
         }
 
@@ -271,7 +275,7 @@ public sealed class PrinterDeploymentOrchestrator
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.ContactingRemote,
-                        $"Falha transitória ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                        RetryMessage("Falha transitória ao conectar", ex, attempt, delay),
                         null));
                 },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -286,7 +290,7 @@ public sealed class PrinterDeploymentOrchestrator
 
             cancellationToken.ThrowIfCancellationRequested();
             diagnosticLog?.Report($"{computer}: drivers encontrados ({drivers.Count}): {string.Join(" | ", drivers)}");
-            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ValidatingDriver, "Verificando drivers", null));
+            progress.Report(new DeploymentProgressEvent(computer, TargetMachineState.ValidatingDriver, "Verificando drivers…", null));
 
             var brandOrder = DistinctBrandsInOrder(request.Printers);
             var failedBrands = new HashSet<PrinterBrand>();
@@ -341,7 +345,7 @@ public sealed class PrinterDeploymentOrchestrator
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Error,
-                        "Nome inválido",
+                        "Nome da impressora em branco",
                         displayName));
                     continue;
                 }
@@ -350,7 +354,7 @@ public sealed class PrinterDeploymentOrchestrator
                 {
                     var text = brandFailureMessage.TryGetValue(def.Brand, out var m) && !string.IsNullOrEmpty(m)
                         ? m
-                        : "Driver ausente";
+                        : NoCompatibleDriverMessage;
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.AbortedDriverMissing,
@@ -376,7 +380,7 @@ public sealed class PrinterDeploymentOrchestrator
                                 progress.Report(new DeploymentProgressEvent(
                                     computer,
                                     TargetMachineState.Error,
-                                    "Etiqueta obrigatória",
+                                    LabelPresetMissingMessage,
                                     displayName));
                                 continue;
                             }
@@ -391,12 +395,14 @@ public sealed class PrinterDeploymentOrchestrator
                                 rollbackJournal,
                                 progress,
                                 cancellationToken,
-                                "Configurando etiqueta").ConfigureAwait(false);
+                                "Configurando etiqueta…").ConfigureAwait(false);
 
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 applied ? TargetMachineState.CompletedSuccess : TargetMachineState.Error,
-                                applied ? "Etiqueta configurada" : "Falha etiqueta",
+                                applied
+                                    ? "Fila já existia; etiqueta configurada"
+                                    : $"Fila já existia; falha ao configurar a etiqueta: {errorDetail}",
                                 displayName));
                             continue;
                         }
@@ -407,7 +413,7 @@ public sealed class PrinterDeploymentOrchestrator
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.SkippedAlreadyExists,
-                            "Já existe",
+                            "Fila já existia; nada foi alterado",
                             displayName));
                         continue;
                     }
@@ -419,7 +425,7 @@ public sealed class PrinterDeploymentOrchestrator
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.AbortedDriverMissing,
-                            "Driver ausente",
+                            NoCompatibleDriverMessage,
                             displayName));
                         continue;
                     }
@@ -430,7 +436,7 @@ public sealed class PrinterDeploymentOrchestrator
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.ContactingRemote,
-                            "Testando ping",
+                            "Testando conexão com a impressora…",
                             displayName));
 
                         var isPrinterReachable = await printerPingCache.GetOrAdd(
@@ -443,7 +449,7 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.Error,
-                                "Impressora offline",
+                                "Impressora offline: não respondeu ao ping",
                                 displayName));
                             continue;
                         }
@@ -454,7 +460,7 @@ public sealed class PrinterDeploymentOrchestrator
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Configuring,
-                        "Criando porta",
+                        "Criando porta…",
                         displayName));
                     await TransientRetryHelper.ExecuteWithRetryAsync(
                         ct => _remote.CreateTcpPrinterPortAsync(
@@ -472,7 +478,7 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.Configuring,
-                                $"Falha transitória ao criar porta ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                                RetryMessage("Falha transitória ao criar porta", ex, attempt, delay),
                                 displayName));
                         },
                         cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -484,7 +490,7 @@ public sealed class PrinterDeploymentOrchestrator
                     progress.Report(new DeploymentProgressEvent(
                         computer,
                         TargetMachineState.Configuring,
-                        "Instalando impressora",
+                        "Instalando impressora…",
                         displayName));
                     await TransientRetryHelper.ExecuteWithRetryAsync(
                         ct => _remote.AddPrinterAsync(
@@ -501,7 +507,7 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.Configuring,
-                                $"Falha transitória ao adicionar impressora ({Flatten(ex)}). Tentando novamente em {delay.TotalSeconds:F0}s (tentativa {attempt + 1}/{_maxRetryAttempts})...",
+                                RetryMessage("Falha transitória ao adicionar impressora", ex, attempt, delay),
                                 displayName));
                         },
                         cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -515,7 +521,7 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.Error,
-                                "Etiqueta obrigatória",
+                                LabelPresetMissingMessage,
                                 displayName));
                             await RevertUnjournaledQueueAsync(
                                 computer,
@@ -537,7 +543,7 @@ public sealed class PrinterDeploymentOrchestrator
                             rollbackJournal,
                             progress,
                             cancellationToken,
-                            "Configurando etiqueta").ConfigureAwait(false);
+                            "Configurando etiqueta…").ConfigureAwait(false);
                         if (!presetApplied)
                         {
                             continue;
@@ -550,7 +556,7 @@ public sealed class PrinterDeploymentOrchestrator
                         progress.Report(new DeploymentProgressEvent(
                             computer,
                             TargetMachineState.Configuring,
-                            "Enviando teste",
+                            "Enviando página de teste…",
                             displayName));
                         try
                         {
@@ -578,17 +584,18 @@ public sealed class PrinterDeploymentOrchestrator
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
                                 TargetMachineState.CompletedSuccess,
-                                "Concluído",
+                                "Página de teste enviada",
                                 displayName));
                         }
                         catch (Exception ex) when (ex is not OperationCanceledException)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
                             diagnosticLog?.Report($"{computer} [{displayName}]: falha no teste de impressão.\n{DiagnosticLogFormatter.FormatExceptionDetails(ex)}");
+                            // A impressora ficou instalada; só a página de teste falhou.
                             progress.Report(new DeploymentProgressEvent(
                                 computer,
-                                TargetMachineState.CompletedSuccess,
-                                "Falha teste",
+                                TargetMachineState.CompletedWithWarning,
+                                $"Instalada, mas a página de teste falhou: {Flatten(ex)}",
                                 displayName));
                         }
                     }
@@ -642,13 +649,13 @@ public sealed class PrinterDeploymentOrchestrator
         var package = _localDrivers.TryGet(brand);
         if (package is null)
         {
-            return (false, $"Driver não instalado: {describe}. Pacote local não encontrado.");
+            return (false, $"Driver não instalado ({describe}): pacote local não encontrado");
         }
 
         progress.Report(new DeploymentProgressEvent(
             computer,
             TargetMachineState.InstallingDriver,
-            "Instalando driver",
+            "Instalando driver…",
             null));
 
         var log = new Progress<string>(msg =>
@@ -662,13 +669,13 @@ public sealed class PrinterDeploymentOrchestrator
         }
         catch (NotImplementedException)
         {
-            return (false, $"Driver não instalado: {describe}. Instalação não suportada neste canal.");
+            return (false, $"Driver não instalado ({describe}): instalação não suportada neste canal");
         }
 
         progress.Report(new DeploymentProgressEvent(
             computer,
             TargetMachineState.DriverInstalledReconfirming,
-            "Confirmando driver",
+            "Confirmando driver…",
             null));
 
         var drivers = await TransientRetryHelper.ExecuteWithRetryAsync(
@@ -679,7 +686,7 @@ public sealed class PrinterDeploymentOrchestrator
         if (!DriverNameMatcher.IsAnyAcceptedDriverInstalled(drivers, acceptable))
         {
             var sample = string.Join(" | ", drivers.Take(10));
-            return (false, $"Driver instalado incompatível. Esperado: {describe}. Encontrado: [{sample}]");
+            return (false, $"Driver instalado incompatível (esperado {describe}, encontrado [{sample}])");
         }
 
         return (true, null);
@@ -722,7 +729,7 @@ public sealed class PrinterDeploymentOrchestrator
                 progress.Report(new DeploymentProgressEvent(
                     computer,
                     TargetMachineState.Configuring,
-                    "Falha na preferência de etiqueta — revertendo fila e porta...",
+                    "Falha ao configurar a etiqueta; revertendo fila e porta…",
                     displayName));
 
                 await RevertUnjournaledQueueAsync(
@@ -736,7 +743,7 @@ public sealed class PrinterDeploymentOrchestrator
                 progress.Report(new DeploymentProgressEvent(
                     computer,
                     TargetMachineState.Error,
-                    $"Revertido — preferência de etiqueta não aplicada: {detail}",
+                    $"Etiqueta não configurada; fila e porta revertidas: {detail}",
                     displayName));
             }
 
@@ -748,7 +755,7 @@ public sealed class PrinterDeploymentOrchestrator
             progress.Report(new DeploymentProgressEvent(
                 computer,
                 TargetMachineState.Configuring,
-                "Preferência de etiqueta aplicada.",
+                "Etiqueta configurada",
                 displayName));
         }
 
@@ -845,6 +852,9 @@ public sealed class PrinterDeploymentOrchestrator
 
         static string DisplayOrUnknown(string value) => string.IsNullOrEmpty(value) ? "desconhecido" : value;
     }
+
+    private string RetryMessage(string what, Exception ex, int attempt, TimeSpan delay) =>
+        $"{what} ({Flatten(ex)}); nova tentativa em {delay.TotalSeconds:F0}s ({attempt + 1}/{_maxRetryAttempts})…";
 
     private static string Flatten(Exception ex)
     {

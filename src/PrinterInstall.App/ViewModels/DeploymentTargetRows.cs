@@ -119,6 +119,7 @@ internal static class DeploymentTargetRows
             return string.Empty;
 
         var ok = 0;
+        var warned = 0;
         var skipped = 0;
         var err = 0;
         var driverMissing = 0;
@@ -129,6 +130,7 @@ internal static class DeploymentTargetRows
         {
             switch (TargetStateCategories.Of(t.State))
             {
+                case TargetStateCategory.Succeeded when t.State == TargetMachineState.CompletedWithWarning: warned++; break;
                 case TargetStateCategory.Succeeded: ok++; break;
                 case TargetStateCategory.Skipped: skipped++; break;
                 // "Driver ausente" tem contagem própria no resumo; as outras falhas somam como erro.
@@ -144,6 +146,7 @@ internal static class DeploymentTargetRows
         var counts = new[]
             {
                 CountText(ok, UiStrings.Main_SummarySucceededOne, UiStrings.Main_SummarySucceededMany),
+                CountText(warned, UiStrings.Main_SummaryWarnedOne, UiStrings.Main_SummaryWarnedMany),
                 CountText(skipped, UiStrings.Main_SummarySkippedOne, UiStrings.Main_SummarySkippedMany),
                 CountText(err, UiStrings.Main_SummaryErrorOne, UiStrings.Main_SummaryErrorMany),
                 CountText(driverMissing, UiStrings.Main_SummaryDriverMissingOne, UiStrings.Main_SummaryDriverMissingMany),
@@ -158,13 +161,11 @@ internal static class DeploymentTargetRows
         if (counts.Count > 0)
             sb.AppendLine(string.Join(", ", counts) + ".");
 
-        if (err > 0 || driverMissing > 0)
+        // Uma linha por falha ou aviso, com o motivo.
+        foreach (var t in targets.Where(x => IsFailureState(x.State) || x.State == TargetMachineState.CompletedWithWarning))
         {
-            foreach (var t in targets.Where(x => IsFailureState(x.State)))
-            {
-                sb.AppendLine(
-                    string.Format(UiStrings.Main_SummaryFailureLineFormat, t.ComputerName, t.PrinterQueueName, t.Message));
-            }
+            sb.AppendLine(
+                string.Format(UiStrings.Main_SummaryFailureLineFormat, t.ComputerName, t.PrinterQueueName, t.Message));
         }
 
         return sb.ToString();
@@ -197,10 +198,11 @@ internal static class DeploymentTargetRows
         var successCount = categories.Count(c => c is TargetStateCategory.Succeeded or TargetStateCategory.Skipped);
         var errorCount = categories.Count(c => c == TargetStateCategory.Failed);
         var cancelCount = categories.Count(c => c == TargetStateCategory.Cancelled);
+        var hasWarning = targets.Any(t => t.State == TargetMachineState.CompletedWithWarning);
 
         if (cancelCount > 0)
             return OperationOutcome.Warning;
-        if (errorCount == 0 && successCount > 0)
+        if (errorCount == 0 && successCount > 0 && !hasWarning)
             return OperationOutcome.Success;
         if (successCount == 0 && errorCount > 0)
             return OperationOutcome.Error;

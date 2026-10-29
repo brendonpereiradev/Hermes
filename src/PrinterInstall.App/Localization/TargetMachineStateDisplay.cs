@@ -17,6 +17,7 @@ public static class TargetMachineStateDisplay
         TargetMachineState.DriverInstalledReconfirming => "Confirmando driver",
         TargetMachineState.Configuring => "Configurando",
         TargetMachineState.CompletedSuccess => "Concluído",
+        TargetMachineState.CompletedWithWarning => "Concluído com aviso",
         TargetMachineState.SkippedAlreadyExists => "Já existe",
         TargetMachineState.AbortedDriverMissing => "Driver ausente",
         TargetMachineState.Error => "Erro",

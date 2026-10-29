@@ -12,6 +12,7 @@ public sealed class TargetMachineStateToIconConverter : IValueConverter
         return state switch
         {
             TargetMachineState.CompletedSuccess => "\uE73E",
+            TargetMachineState.CompletedWithWarning => "\uE7BA",
             TargetMachineState.SkippedAlreadyExists => "\uE946",
             TargetMachineState.AbortedDriverMissing => "\uE711",
             TargetMachineState.Error => "\uEA39",

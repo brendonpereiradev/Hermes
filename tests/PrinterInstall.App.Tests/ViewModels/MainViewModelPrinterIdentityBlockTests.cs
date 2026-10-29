@@ -55,7 +55,7 @@ public class MainViewModelPrinterIdentityBlockTests
             reasons.Count == 1 && reasons[0].Contains("Lexmark") && reasons[0].Contains("Epson")), true), Times.Once);
         var target = Assert.Single(vm.Targets);
         Assert.Equal(TargetMachineState.PrinterIdentityMismatch, target.State);
-        Assert.Equal("Lexmark ≠ Epson", target.Message);
+        Assert.Equal("Identificada como Lexmark, selecionada como Epson", target.Message);
         Assert.Contains("implantação bloqueada", vm.LogText, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("via SNMP", vm.LogText);
         Assert.DoesNotContain('—', vm.LogText);

@@ -29,7 +29,9 @@ internal static class TargetStateCategories
             or TargetMachineState.Configuring
             or TargetMachineState.RollbackRemovingQueue
             or TargetMachineState.RollbackRemovingPort => TargetStateCategory.InProgress,
-        TargetMachineState.CompletedSuccess => TargetStateCategory.Succeeded,
+        // A impressora ficou instalada; o aviso aparece na cor da linha e no resumo, não como falha.
+        TargetMachineState.CompletedSuccess
+            or TargetMachineState.CompletedWithWarning => TargetStateCategory.Succeeded,
         TargetMachineState.SkippedAlreadyExists => TargetStateCategory.Skipped,
         TargetMachineState.Error
             or TargetMachineState.AbortedDriverMissing

@@ -25,11 +25,23 @@ public partial class TargetRowViewModel : ObservableObject
     private TargetMachineState _state = TargetMachineState.Pending;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Detail))]
     private string _stateDisplay = TargetMachineStateDisplay.GetDisplay(TargetMachineState.Pending);
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Detail))]
     private string _message = "";
+
+    /// <summary>
+    /// A mensagem, mostrada sob o estado só quando acrescenta algo: vazia quando apenas repete o estado
+    /// ("Concluído" / "Concluído", "Instalando driver" / "Instalando driver…").
+    /// </summary>
+    public string Detail => Normalize(Message).Equals(Normalize(StateDisplay), StringComparison.OrdinalIgnoreCase)
+        ? ""
+        : Message;
 
     partial void OnStateChanged(TargetMachineState value) =>
         StateDisplay = TargetMachineStateDisplay.GetDisplay(value);
+
+    private static string Normalize(string text) => text.Trim().TrimEnd('…', '.').TrimEnd();
 }

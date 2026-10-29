@@ -200,7 +200,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
-            <Setter Property="ToolTip" Value="{Binding Message}"/>
+            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
         </Style>
 
         <Style x:Key="StatusMonoTextElementStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusTextElementStyle}">
@@ -211,7 +211,6 @@
         <Style x:Key="StatusSecondaryTextElementStyle" TargetType="TextBlock" BasedOn="{StaticResource StatusTextElementStyle}">
             <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
         </Style>
-
         <Style x:Key="ModernStatusDataGridStyle" TargetType="DataGrid">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -462,30 +461,40 @@
                                           CanUserAddRows="False"
                                           Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerNameDisplay}" Width="*" MinWidth="130" ElementStyle="{StaticResource StatusMonoTextElementStyle}"/>
-                                        <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="140" ElementStyle="{StaticResource StatusSecondaryTextElementStyle}"/>
-                                        <!-- Largura do estado mais longo ("Identificação inconclusiva") com o ponto e o espaçamento da célula. -->
-                                        <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="220" MinWidth="220">
+                                        <DataGridTextColumn Header="{DynamicResource Main_ColumnComputer}" Binding="{Binding ComputerNameDisplay}" Width="Auto" MinWidth="130" MaxWidth="240" ElementStyle="{StaticResource StatusMonoTextElementStyle}"/>
+                                        <DataGridTextColumn Header="{DynamicResource Main_ColumnQueue}" Binding="{Binding PrinterQueueName}" Width="Auto" MinWidth="120" MaxWidth="220" ElementStyle="{StaticResource StatusSecondaryTextElementStyle}"/>
+                                        <!-- Estado e, embaixo, o detalhe que acrescenta algo a ele (etapa em andamento, motivo do erro). -->
+                                        <DataGridTemplateColumn Header="{DynamicResource Main_ColumnState}" Width="*" MinWidth="200">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <!-- Ponto colorido e texto, sem etiqueta: cor só para o estado, como no Talos. -->
-                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Grid VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
                                                         <Ellipse Width="8" Height="8"
-                                                                 Margin="0,1,8,0"
-                                                                 VerticalAlignment="Center"
+                                                                 Margin="0,6,8,0"
+                                                                 VerticalAlignment="Top"
                                                                  Fill="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Dot}"/>
-                                                        <TextBlock Text="{Binding StateDisplay}"
-                                                                   ToolTip="{Binding StateDisplay}"
-                                                                   FontSize="13"
-                                                                   FontWeight="Medium"
-                                                                   VerticalAlignment="Center"
-                                                                   TextTrimming="CharacterEllipsis"
-                                                                   Foreground="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Foreground}"/>
-                                                    </StackPanel>
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="{Binding StateDisplay}"
+                                                                       FontSize="13"
+                                                                       FontWeight="Medium"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       Foreground="{Binding State, Converter={StaticResource StateBrushConverter}, ConverterParameter=Foreground}"/>
+                                                            <TextBlock Text="{Binding Detail}"
+                                                                       ToolTip="{Binding Detail}"
+                                                                       FontSize="12"
+                                                                       Margin="0,1,0,0"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                                                       Visibility="{Binding Detail, Converter={StaticResource EmptyToVis}, ConverterParameter=Invert}"/>
+                                                        </StackPanel>
+                                                    </Grid>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="{DynamicResource Main_ColumnMessage}" Binding="{Binding Message}" Width="*" ElementStyle="{StaticResource StatusSecondaryTextElementStyle}"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <TextBlock Text="{DynamicResource Main_StatusEmptyHint}"

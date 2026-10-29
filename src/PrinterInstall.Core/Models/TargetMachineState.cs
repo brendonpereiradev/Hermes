@@ -13,6 +13,8 @@ public enum TargetMachineState
     DriverInstalledReconfirming,
     Configuring,
     CompletedSuccess,
+    /// <summary>Impressora instalada, mas uma etapa opcional (a página de teste) falhou.</summary>
+    CompletedWithWarning,
     SkippedAlreadyExists,
     AbortedDriverMissing,
     Error,

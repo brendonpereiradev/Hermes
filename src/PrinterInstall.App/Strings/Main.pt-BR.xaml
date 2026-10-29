@@ -16,9 +16,8 @@
   <sys:String x:Key="Main_StatusSummaryOf">de</sys:String>
   <sys:String x:Key="Main_StatusSummarySucceeded">concluídos</sys:String>
   <sys:String x:Key="Main_ColumnComputer">Computador</sys:String>
-  <sys:String x:Key="Main_ColumnQueue">Nome</sys:String>
+  <sys:String x:Key="Main_ColumnQueue">Impressora</sys:String>
   <sys:String x:Key="Main_ColumnState">Estado</sys:String>
-  <sys:String x:Key="Main_ColumnMessage">Mensagem</sys:String>
   <sys:String x:Key="Main_PrintersGroupHeader">Configuração de impressora</sys:String>
   <sys:String x:Key="Main_BrandLabel">Modelo</sys:String>
   <sys:String x:Key="Main_DisplayNameLabel">Nome da impressora</sys:String>

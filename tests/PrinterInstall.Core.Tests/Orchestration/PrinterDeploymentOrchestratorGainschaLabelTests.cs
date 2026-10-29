@@ -99,7 +99,7 @@ public class PrinterDeploymentOrchestratorGainschaLabelTests
         Assert.Empty(journal.QueueEntries);
         Assert.Empty(journal.PortOnlyEntries);
         Assert.Contains(events, e => e is { State: TargetMachineState.Error, PrinterQueueName: "Q1" }
-            && e.Message.Contains("Revertido", StringComparison.OrdinalIgnoreCase));
+            && e.Message.Contains("fila e porta revertidas", StringComparison.OrdinalIgnoreCase));
         remote.Verify(m => m.PrintTestPageAsync(It.IsAny<string>(), It.IsAny<NetworkCredential>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

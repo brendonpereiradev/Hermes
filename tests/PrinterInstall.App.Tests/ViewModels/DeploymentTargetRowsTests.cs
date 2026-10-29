@@ -117,6 +117,7 @@ public class DeploymentTargetRowsTests
     [InlineData(new[] { TargetMachineState.Error, TargetMachineState.PrinterIdentityUnknown }, OperationOutcome.Error)]
     [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.Error }, OperationOutcome.Warning)]
     [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.RolledBack }, OperationOutcome.Warning)]
+    [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.CompletedWithWarning }, OperationOutcome.Warning)]
     internal void GetOutcome_ReflectsRowStates(TargetMachineState[] states, OperationOutcome expected)
     {
         var rows = states.Select((s, i) => Row("PC1", $"Q{i}", s)).ToArray();
@@ -166,7 +167,24 @@ public class DeploymentTargetRowsTests
         Assert.Equal("1 concluído.", DeploymentTargetRows.BuildSummaryText(rows.Take(1).ToArray()).Trim());
     }
 
+    [Fact]
+    public void BuildSummaryText_CountsAndListsWarningsSeparately()
+    {
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.CompletedSuccess),
+            Row("PC2", "A", TargetMachineState.CompletedWithWarning)
+        };
+        rows[1].Message = "Instalada, mas a página de teste falhou: spooler";
+
+        var summary = DeploymentTargetRows.BuildSummaryText(rows);
+
+        Assert.StartsWith("1 concluído, 1 concluído com aviso.", summary);
+        Assert.Contains("PC2 | A | Instalada, mas a página de teste falhou: spooler", summary);
+    }
+
     [Theory]
+    [InlineData(new[] { TargetMachineState.CompletedWithWarning }, SummaryTone.Warning)]
     [InlineData(new[] { TargetMachineState.CompletedSuccess }, SummaryTone.Success)]
     [InlineData(new[] { TargetMachineState.Error }, SummaryTone.Error)]
     [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.Error }, SummaryTone.Warning)]

@@ -137,8 +137,10 @@ public class PrinterDeploymentOrchestratorTests
         var events = new List<DeploymentProgressEvent>();
         await sut.RunAsync(request, new DeploymentRollbackJournal(), new InlineProgress<DeploymentProgressEvent>(events.Add));
 
-        var done = Assert.Single(events.Where(e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Office" }));
-        Assert.Contains("Falha teste", done.Message, StringComparison.OrdinalIgnoreCase);
+        // Instalada, mas com aviso: a falha da página de teste não pode passar como sucesso limpo.
+        var done = Assert.Single(events, e => e is { State: TargetMachineState.CompletedWithWarning, PrinterQueueName: "Office" });
+        Assert.Contains("página de teste falhou", done.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(events, e => e is { State: TargetMachineState.CompletedSuccess, PrinterQueueName: "Office" });
     }
 
     [Fact]

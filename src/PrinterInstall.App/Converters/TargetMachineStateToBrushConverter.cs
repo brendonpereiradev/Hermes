@@ -77,6 +77,7 @@ public sealed class TargetMachineStateToBrushConverter : IValueConverter
     private static Tone ToneOf(TargetMachineState state) => state switch
     {
         TargetMachineState.CompletedSuccess => Tone.Success,
+        TargetMachineState.CompletedWithWarning => Tone.Warning,
         TargetMachineState.SkippedAlreadyExists => Tone.Warning,
         TargetMachineState.DeployCancelled => Tone.Warning,
         TargetMachineState.AbortedDriverMissing => Tone.Error,

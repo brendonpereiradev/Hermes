@@ -27,6 +27,8 @@ public class UiStrings
     public static string Main_LocalOnlyRemoteBlocked => ResourceManager.GetString(nameof(Main_LocalOnlyRemoteBlocked), ResourceCulture)!;
     public static string Main_SummarySucceededOne => ResourceManager.GetString(nameof(Main_SummarySucceededOne), ResourceCulture)!;
     public static string Main_SummarySucceededMany => ResourceManager.GetString(nameof(Main_SummarySucceededMany), ResourceCulture)!;
+    public static string Main_SummaryWarnedOne => ResourceManager.GetString(nameof(Main_SummaryWarnedOne), ResourceCulture)!;
+    public static string Main_SummaryWarnedMany => ResourceManager.GetString(nameof(Main_SummaryWarnedMany), ResourceCulture)!;
     public static string Main_SummarySkippedOne => ResourceManager.GetString(nameof(Main_SummarySkippedOne), ResourceCulture)!;
     public static string Main_SummarySkippedMany => ResourceManager.GetString(nameof(Main_SummarySkippedMany), ResourceCulture)!;
     public static string Main_SummaryErrorOne => ResourceManager.GetString(nameof(Main_SummaryErrorOne), ResourceCulture)!;

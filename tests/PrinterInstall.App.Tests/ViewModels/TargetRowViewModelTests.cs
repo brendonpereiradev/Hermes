@@ -72,4 +72,30 @@ public class TargetRowViewModelTests
         Assert.Equal(newState, sut.State);
         Assert.Equal(TargetMachineStateDisplay.GetDisplay(newState), sut.StateDisplay);
     }
+
+    [Theory]
+    [InlineData(TargetMachineState.CompletedSuccess, "Concluído", "")]
+    [InlineData(TargetMachineState.InstallingDriver, "Instalando driver…", "")]
+    [InlineData(TargetMachineState.DeployCancelled, "Cancelado", "")]
+    [InlineData(TargetMachineState.Error, "Impressora offline: não respondeu ao ping", "Impressora offline: não respondeu ao ping")]
+    [InlineData(TargetMachineState.Configuring, "Criando porta…", "Criando porta…")]
+    public void Detail_HidesMessageThatOnlyRepeatsState(TargetMachineState state, string message, string expected)
+    {
+        var sut = new TargetRowViewModel { State = state, Message = message };
+
+        Assert.Equal(expected, sut.Detail);
+    }
+
+    [Fact]
+    public void Detail_NotifiesWhenMessageOrStateChanges()
+    {
+        var sut = new TargetRowViewModel();
+        var changes = new List<string?>();
+        sut.PropertyChanged += (_, e) => changes.Add(e.PropertyName);
+
+        sut.Message = "Criando porta…";
+        sut.State = TargetMachineState.Configuring;
+
+        Assert.Equal(2, changes.Count(p => p == nameof(TargetRowViewModel.Detail)));
+    }
 }

@@ -14,6 +14,8 @@
   <data name="Main_LocalOnlyRemoteBlocked" xml:space="preserve"><value>Modo local: só este computador pode receber impressoras</value></data>
   <data name="Main_SummarySucceededOne" xml:space="preserve"><value>{0} concluído</value></data>
   <data name="Main_SummarySucceededMany" xml:space="preserve"><value>{0} concluídos</value></data>
+  <data name="Main_SummaryWarnedOne" xml:space="preserve"><value>{0} concluído com aviso</value></data>
+  <data name="Main_SummaryWarnedMany" xml:space="preserve"><value>{0} concluídos com aviso</value></data>
   <data name="Main_SummarySkippedOne" xml:space="preserve"><value>{0} ignorado</value></data>
   <data name="Main_SummarySkippedMany" xml:space="preserve"><value>{0} ignorados</value></data>
   <data name="Main_SummaryErrorOne" xml:space="preserve"><value>{0} erro</value></data>

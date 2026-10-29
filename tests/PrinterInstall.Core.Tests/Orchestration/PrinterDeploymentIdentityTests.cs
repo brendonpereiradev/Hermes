@@ -135,7 +135,7 @@ public class PrinterDeploymentIdentityTests
 
         remote.VerifyNoOtherCalls();
         Assert.Contains(events, e => e.State == TargetMachineState.PrinterIdentityUnknown
-            && e.Message == "Modelo da impressora não identificado."
+            && e.Message == "Modelo da impressora não identificado"
             && e.Detail!.Contains("Nenhuma resposta"));
     }
 
