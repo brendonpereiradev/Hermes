@@ -265,7 +265,7 @@
                                                                      Padding="2,0"/>
                                                             <TextBlock Text="{DynamicResource Removal_RenamePlaceholder}"
                                                                        Foreground="{DynamicResource AppTextSecondaryBrush}"
-                                                                       Margin="4,0,0,0"
+                                                                       Margin="6,0,0,0"
                                                                        VerticalAlignment="Center"
                                                                        IsHitTestVisible="False"
                                                                        Visibility="{Binding NewName, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
