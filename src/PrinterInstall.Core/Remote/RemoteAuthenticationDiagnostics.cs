@@ -19,6 +19,9 @@ internal static class RemoteAuthenticationDiagnostics
             if (current is Win32Exception { NativeErrorCode: 1219 })
                 return "Já existe uma conexão SMB com outra conta (Win32 1219) e nenhum nome alternativo do destino (DNS) foi aceito. " +
                     "Feche pastas do destino abertas no Explorer e unidades mapeadas para ele (net use), ou faça logoff, e tente novamente.";
+            if (current is Win32Exception { NativeErrorCode: 1909 })
+                return "A conta informada está bloqueada no domínio (Win32 1909), geralmente por tentativas de senha incorretas. " +
+                    "Peça o desbloqueio ao administrador do domínio ou aguarde o fim do bloqueio e entre novamente.";
         }
 
         if (AccessDeniedDetector.IsAccessDenied(exception))
