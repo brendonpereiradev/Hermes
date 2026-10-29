@@ -115,7 +115,7 @@
                                        Padding="10,4"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                                        Text="{Binding QueuesLoadError}" Foreground="{DynamicResource AppBadgeDangerForegroundBrush}" TextWrapping="Wrap" Margin="0,4,0,0"
-                                       Visibility="{Binding QueuesLoadError, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
+                                       Visibility="{Binding QueuesLoadError, Converter={StaticResource StringEmptyToVisibilityConverter}, ConverterParameter=Invert}"/>
                         </Grid>
                         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
                             <ui:Button Content="{DynamicResource Removal_Next}" Command="{Binding NextQueueStepCommand}" Padding="16,6" Style="{StaticResource PrimaryActionButtonStyle}"/>
