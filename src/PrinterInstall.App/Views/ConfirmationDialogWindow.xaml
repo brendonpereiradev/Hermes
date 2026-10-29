@@ -89,7 +89,18 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="• " FontWeight="Bold" Margin="0,0,6,0" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                    <!-- Marcador só quando há mais de um item: uma linha solta não é lista. -->
+                                    <TextBlock Grid.Column="0" Text="• " FontWeight="Bold" Margin="0,0,6,0" Foreground="{DynamicResource AppTextSecondaryBrush}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Items.Count, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="1">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <TextBlock Grid.Column="1" Text="{Binding}" Foreground="{DynamicResource AppTextPrimaryBrush}" TextWrapping="Wrap" FontSize="12.5"/>
                                 </Grid>
                             </DataTemplate>

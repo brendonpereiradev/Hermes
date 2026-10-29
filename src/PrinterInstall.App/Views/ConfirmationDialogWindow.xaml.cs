@@ -145,9 +145,10 @@ public partial class ConfirmationDialogWindow : HermesWindow
         SecondaryButton.Visibility = Visibility.Collapsed;
         PrimaryButton.Content = buttonText;
 
-        // Informação (azul), aviso (âmbar) ou erro (vermelho), conforme o resultado.
+        // Informação (azul), sucesso (verde), aviso (âmbar) ou erro (vermelho), conforme o resultado.
         (IconGlyphText.Text, var palette) = tone switch
         {
+            SummaryTone.Success => ("", "Success"),
             SummaryTone.Warning => ("\uE7BA", "Warning"),
             SummaryTone.Error => ("\uEA39", "Danger"),
             _ => ("\uE946", "Info")

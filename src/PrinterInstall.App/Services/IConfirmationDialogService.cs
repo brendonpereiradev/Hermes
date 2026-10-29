@@ -52,6 +52,7 @@ public interface IConfirmationDialogService
 public enum SummaryTone
 {
     Info,
+    Success,
     Warning,
     Error
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using PrinterInstall.App.Resources;
+using PrinterInstall.App.Services;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
 
@@ -139,14 +140,23 @@ internal static class DeploymentTargetRows
             }
         }
 
+        // Só as contagens diferentes de zero, numa frase: "1 concluído, 2 erros."
+        var counts = new[]
+            {
+                CountText(ok, UiStrings.Main_SummarySucceededOne, UiStrings.Main_SummarySucceededMany),
+                CountText(skipped, UiStrings.Main_SummarySkippedOne, UiStrings.Main_SummarySkippedMany),
+                CountText(err, UiStrings.Main_SummaryErrorOne, UiStrings.Main_SummaryErrorMany),
+                CountText(driverMissing, UiStrings.Main_SummaryDriverMissingOne, UiStrings.Main_SummaryDriverMissingMany),
+                CountText(rolledBack, UiStrings.Main_SummaryRolledBackOne, UiStrings.Main_SummaryRolledBackMany),
+                CountText(deployCancelled, UiStrings.Main_SummaryDeployCancelledOne, UiStrings.Main_SummaryDeployCancelledMany),
+                CountText(inProgress, UiStrings.Main_SummaryInProgressOne, UiStrings.Main_SummaryInProgressMany)
+            }
+            .Where(c => c is not null)
+            .ToList();
+
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, driverMissing));
-        if (inProgress > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, inProgress));
-        if (rolledBack > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryRolledBackFormat, rolledBack));
-        if (deployCancelled > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryDeployCancelledFormat, deployCancelled));
+        if (counts.Count > 0)
+            sb.AppendLine(string.Join(", ", counts) + ".");
 
         if (err > 0 || driverMissing > 0)
         {
@@ -158,6 +168,23 @@ internal static class DeploymentTargetRows
         }
 
         return sb.ToString();
+    }
+
+    private static string? CountText(int count, string oneFormat, string manyFormat) =>
+        count == 0 ? null : string.Format(count == 1 ? oneFormat : manyFormat, count);
+
+    /// <summary>Título e tom da caixa de resumo: responde de cara se a instalação deu certo.</summary>
+    public static (string Title, SummaryTone Tone) GetSummaryHeading(IReadOnlyCollection<TargetRowViewModel> targets)
+    {
+        if (targets.Any(t => TargetStateCategories.Of(t.State) == TargetStateCategory.Cancelled))
+            return (UiStrings.Main_SummaryTitleCancelled, SummaryTone.Warning);
+
+        return GetOutcome(targets) switch
+        {
+            OperationOutcome.Success => (UiStrings.Main_SummaryTitleSuccess, SummaryTone.Success),
+            OperationOutcome.Error => (UiStrings.Main_SummaryTitleError, SummaryTone.Error),
+            _ => (UiStrings.Main_SummaryTitleWarning, SummaryTone.Warning)
+        };
     }
 
     public static OperationOutcome GetOutcome(IReadOnlyCollection<TargetRowViewModel> targets)

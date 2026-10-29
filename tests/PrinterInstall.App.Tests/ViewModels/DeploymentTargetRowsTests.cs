@@ -1,3 +1,4 @@
+using PrinterInstall.App.Services;
 using PrinterInstall.App.ViewModels;
 using PrinterInstall.Core.Models;
 using PrinterInstall.Core.Orchestration;
@@ -148,8 +149,33 @@ public class DeploymentTargetRowsTests
 
         var summary = DeploymentTargetRows.BuildSummaryText(rows);
 
-        Assert.Contains("1 erro(s), 1 driver(s) ausente(s)", summary);
+        Assert.Contains("1 erro, 1 driver ausente.", summary);
         Assert.DoesNotContain("cancelado", summary);
+    }
+
+    [Fact]
+    public void BuildSummaryText_HidesZeroCountsAndPluralizes()
+    {
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.CompletedSuccess),
+            Row("PC2", "A", TargetMachineState.CompletedSuccess)
+        };
+
+        Assert.Equal("2 concluídos.", DeploymentTargetRows.BuildSummaryText(rows).Trim());
+        Assert.Equal("1 concluído.", DeploymentTargetRows.BuildSummaryText(rows.Take(1).ToArray()).Trim());
+    }
+
+    [Theory]
+    [InlineData(new[] { TargetMachineState.CompletedSuccess }, SummaryTone.Success)]
+    [InlineData(new[] { TargetMachineState.Error }, SummaryTone.Error)]
+    [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.Error }, SummaryTone.Warning)]
+    [InlineData(new[] { TargetMachineState.CompletedSuccess, TargetMachineState.DeployCancelled }, SummaryTone.Warning)]
+    internal void GetSummaryHeading_ToneFollowsOutcome(TargetMachineState[] states, SummaryTone expected)
+    {
+        var rows = states.Select((s, i) => Row("PC1", $"Q{i}", s)).ToArray();
+
+        Assert.Equal(expected, DeploymentTargetRows.GetSummaryHeading(rows).Tone);
     }
 
     [Fact]
@@ -164,8 +190,6 @@ public class DeploymentTargetRowsTests
 
         var summary = DeploymentTargetRows.BuildSummaryText(rows);
 
-        Assert.Contains("Revertido(s) nesta execução: 1", summary);
-        Assert.Contains("após cancelamento (sem reversão ou antes da reversão): 1", summary);
-        Assert.Contains("Outros estados: 1", summary);
+        Assert.Contains("1 revertido, 1 interrompido pelo cancelamento, 1 não finalizado.", summary);
     }
 }

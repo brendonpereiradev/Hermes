@@ -601,7 +601,8 @@ public partial class MainViewModel : ObservableObject
         }
         else if (!string.IsNullOrEmpty(LastSummaryText))
         {
-            await _dialogService.ShowSummaryAsync(UiStrings.Main_SummaryDialogTitle, LastSummaryText, SummaryTone.Info);
+            var (title, tone) = DeploymentTargetRows.GetSummaryHeading(Targets);
+            await _dialogService.ShowSummaryAsync(title, LastSummaryText, tone);
         }
     }
 

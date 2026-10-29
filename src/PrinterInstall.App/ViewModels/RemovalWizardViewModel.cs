@@ -439,15 +439,14 @@ public partial class RemovalWizardViewModel : ObservableObject
             var successfulRenames = Math.Max(0, totalRenames - renameErrors);
             var effectiveSuccessCount = queueSuccessCount + successfulRenames;
 
-            _notificationService.Notify(GetControlOutcome(totalActions, effectiveSuccessCount, warningCount, errorCount));
+            var outcome = GetControlOutcome(totalActions, effectiveSuccessCount, warningCount, errorCount);
+            _notificationService.Notify(outcome);
 
             var summary = BuildSummaryText(effectiveSuccessCount, warningCount, errorCount, failureLines);
             Log.Append(summary);
 
-            var tone = errorCount > 0
-                ? (effectiveSuccessCount > 0 ? SummaryTone.Warning : SummaryTone.Error)
-                : (warningCount > 0 ? SummaryTone.Warning : SummaryTone.Info);
-            await _dialogService.ShowSummaryAsync(UiStrings.Removal_SummaryDialogTitle, summary, tone).ConfigureAwait(true);
+            var (title, tone) = GetSummaryHeading(outcome);
+            await _dialogService.ShowSummaryAsync(title, summary, tone).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
         {
@@ -462,7 +461,7 @@ public partial class RemovalWizardViewModel : ObservableObject
             _notificationService.NotifyError();
 
             await _dialogService.ShowSummaryAsync(
-                UiStrings.Removal_SummaryDialogTitle,
+                UiStrings.Removal_SummaryTitleError,
                 string.Format(UiStrings.Removal_LogErrorFormat, errorFormatted),
                 SummaryTone.Error).ConfigureAwait(true);
         }
@@ -483,10 +482,31 @@ public partial class RemovalWizardViewModel : ObservableObject
         return OperationOutcome.Warning;
     }
 
-    private static string BuildSummaryText(int successCount, int warningCount, int errorCount, IReadOnlyList<string> failureLines)
+    /// <summary>Título e tom da caixa de resumo: responde de cara se as alterações deram certo.</summary>
+    internal static (string Title, SummaryTone Tone) GetSummaryHeading(OperationOutcome outcome) => outcome switch
     {
+        OperationOutcome.Error => (UiStrings.Removal_SummaryTitleError, SummaryTone.Error),
+        OperationOutcome.Warning => (UiStrings.Removal_SummaryTitleWarning, SummaryTone.Warning),
+        _ => (UiStrings.Removal_SummaryTitleSuccess, SummaryTone.Success)
+    };
+
+    internal static string BuildSummaryText(int successCount, int warningCount, int errorCount, IReadOnlyList<string> failureLines)
+    {
+        // Só as contagens diferentes de zero, numa frase: "1 concluída, 2 erros."
+        var counts = new[]
+            {
+                CountText(successCount, UiStrings.Removal_SummarySucceededOne, UiStrings.Removal_SummarySucceededMany),
+                CountText(warningCount, UiStrings.Removal_SummaryWarningOne, UiStrings.Removal_SummaryWarningMany),
+                CountText(errorCount, UiStrings.Removal_SummaryErrorOne, UiStrings.Removal_SummaryErrorMany)
+            }
+            .Where(c => c is not null)
+            .ToList();
+        // Sem nenhuma contagem a caixa nem abriria; "0 concluídas" ao menos diz que nada mudou.
+        if (counts.Count == 0)
+            counts.Add(string.Format(UiStrings.Removal_SummarySucceededMany, 0));
+
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(UiStrings.Removal_SummaryLineFormat, successCount, warningCount, errorCount));
+        sb.AppendLine(string.Join(", ", counts) + ".");
         if (failureLines.Count > 0)
         {
             sb.AppendLine();
@@ -498,6 +518,9 @@ public partial class RemovalWizardViewModel : ObservableObject
         }
         return sb.ToString().TrimEnd();
     }
+
+    private static string? CountText(int count, string oneFormat, string manyFormat) =>
+        count == 0 ? null : string.Format(count == 1 ? oneFormat : manyFormat, count);
 
     private async Task LoadCurrentMachineAsync()
     {

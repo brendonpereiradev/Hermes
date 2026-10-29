@@ -12,10 +12,25 @@
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Nome inválido</value></data>
   <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
   <data name="Main_LocalOnlyRemoteBlocked" xml:space="preserve"><value>Modo local: só este computador pode receber impressoras</value></data>
-  <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} driver(s) ausente(s).</value></data>
-  <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
+  <data name="Main_SummarySucceededOne" xml:space="preserve"><value>{0} concluído</value></data>
+  <data name="Main_SummarySucceededMany" xml:space="preserve"><value>{0} concluídos</value></data>
+  <data name="Main_SummarySkippedOne" xml:space="preserve"><value>{0} ignorado</value></data>
+  <data name="Main_SummarySkippedMany" xml:space="preserve"><value>{0} ignorados</value></data>
+  <data name="Main_SummaryErrorOne" xml:space="preserve"><value>{0} erro</value></data>
+  <data name="Main_SummaryErrorMany" xml:space="preserve"><value>{0} erros</value></data>
+  <data name="Main_SummaryDriverMissingOne" xml:space="preserve"><value>{0} driver ausente</value></data>
+  <data name="Main_SummaryDriverMissingMany" xml:space="preserve"><value>{0} drivers ausentes</value></data>
+  <data name="Main_SummaryRolledBackOne" xml:space="preserve"><value>{0} revertido</value></data>
+  <data name="Main_SummaryRolledBackMany" xml:space="preserve"><value>{0} revertidos</value></data>
+  <data name="Main_SummaryDeployCancelledOne" xml:space="preserve"><value>{0} interrompido pelo cancelamento</value></data>
+  <data name="Main_SummaryDeployCancelledMany" xml:space="preserve"><value>{0} interrompidos pelo cancelamento</value></data>
+  <data name="Main_SummaryInProgressOne" xml:space="preserve"><value>{0} não finalizado</value></data>
+  <data name="Main_SummaryInProgressMany" xml:space="preserve"><value>{0} não finalizados</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
-  <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>
+  <data name="Main_SummaryTitleSuccess" xml:space="preserve"><value>Instalação concluída</value></data>
+  <data name="Main_SummaryTitleWarning" xml:space="preserve"><value>Instalação concluída com problemas</value></data>
+  <data name="Main_SummaryTitleError" xml:space="preserve"><value>A instalação falhou</value></data>
+  <data name="Main_SummaryTitleCancelled" xml:space="preserve"><value>Instalação interrompida</value></data>
   <data name="Dialog_OkButton" xml:space="preserve"><value>OK</value></data>
   <data name="Main_DeployCancelRequested" xml:space="preserve"><value>Cancelamento solicitado pelo operador.</value></data>
   <data name="Main_DeployRollbackStarting" xml:space="preserve"><value>Revertendo alterações criadas nesta execução…</value></data>
@@ -24,8 +39,6 @@
   <data name="Main_DeployCooperativeCancelHint" xml:space="preserve"><value>Se uma fila tiver sido criada no alvo após o pedido de cancelamento, use Controle de impressoras para concluir a limpeza.</value></data>
   <data name="Main_DeployCancelledRowMessage" xml:space="preserve"><value>Cancelado</value></data>
   <data name="Main_RollbackPreparingOnHost" xml:space="preserve"><value>Preparando reversão</value></data>
-  <data name="Main_SummaryRolledBackFormat" xml:space="preserve"><value>Revertido(s) nesta execução: {0}</value></data>
-  <data name="Main_SummaryDeployCancelledFormat" xml:space="preserve"><value>Interrompido(s) após cancelamento (sem reversão ou antes da reversão): {0}</value></data>
   <data name="Login_Validation_DomainUserRequired" xml:space="preserve"><value>Informe seu usuário de rede.</value></data>
   <data name="Login_Validation_PasswordRequired" xml:space="preserve"><value>Informe sua senha.</value></data>
   <data name="Login_Validation_DomainTitle" xml:space="preserve"><value>Configure o domínio para entrar.</value></data>
@@ -77,8 +90,15 @@
   <data name="Log_ExportSuccessFormat" xml:space="preserve"><value>Log exportado com sucesso para: {0}</value></data>
   <data name="Log_ExportErrorFormat" xml:space="preserve"><value>Falha ao exportar log: {0}</value></data>
   <data name="Log_OpenFolderErrorFormat" xml:space="preserve"><value>Não foi possível abrir a pasta de logs: {0}</value></data>
-  <data name="Removal_SummaryDialogTitle" xml:space="preserve"><value>Resumo do controle de impressoras</value></data>
-  <data name="Removal_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} aviso(s), {2} erro(s).</value></data>
+  <data name="Removal_SummaryTitleSuccess" xml:space="preserve"><value>Alterações concluídas</value></data>
+  <data name="Removal_SummaryTitleWarning" xml:space="preserve"><value>Alterações concluídas com problemas</value></data>
+  <data name="Removal_SummaryTitleError" xml:space="preserve"><value>As alterações falharam</value></data>
+  <data name="Removal_SummarySucceededOne" xml:space="preserve"><value>{0} concluída</value></data>
+  <data name="Removal_SummarySucceededMany" xml:space="preserve"><value>{0} concluídas</value></data>
+  <data name="Removal_SummaryWarningOne" xml:space="preserve"><value>{0} aviso</value></data>
+  <data name="Removal_SummaryWarningMany" xml:space="preserve"><value>{0} avisos</value></data>
+  <data name="Removal_SummaryErrorOne" xml:space="preserve"><value>{0} erro</value></data>
+  <data name="Removal_SummaryErrorMany" xml:space="preserve"><value>{0} erros</value></data>
   <data name="Removal_SummaryFailuresHeader" xml:space="preserve"><value>Falhas registradas:</value></data>
   <data name="Removal_Cancelled" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
   <data name="Main_DeployWarningDialogTitle" xml:space="preserve"><value>Atenção: possível divergência de modelo</value></data>
