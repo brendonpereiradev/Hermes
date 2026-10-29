@@ -21,8 +21,8 @@ public static class TargetMachineStateDisplay
         TargetMachineState.AbortedDriverMissing => "Driver ausente",
         TargetMachineState.Error => "Erro",
         TargetMachineState.DeployCancelled => "Cancelado",
-        TargetMachineState.RollbackRemovingQueue => "Removendo fila",
-        TargetMachineState.RollbackRemovingPort => "Removendo porta",
+        TargetMachineState.RollbackRemovingQueue => "Revertendo: fila",
+        TargetMachineState.RollbackRemovingPort => "Revertendo: porta",
         TargetMachineState.RolledBack => "Revertido",
         _ => state.ToString()
     };

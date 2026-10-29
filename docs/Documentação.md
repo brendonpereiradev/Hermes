@@ -171,7 +171,7 @@ As caixas de aviso e de resumo não têm barra de título: feche pelos botões d
 
 Os computadores são processados em paralelo. A tabela **Status** mostra, para cada computador e fila, o estado atual e uma mensagem. Uma falha em uma máquina não interrompe as demais.
 
-Ao lado do título **Status**, o resumo mostra quantas filas foram concluídas sobre o total (ex.: "1 de 3 concluídos"). A barra à direita divide o lote em concluídos (verde), com falha (vermelho) e os demais (cinza): pendentes, em andamento, já existentes, cancelados ou revertidos.
+Ao lado do título **Status**, o resumo mostra quantas filas foram concluídas sobre o total (ex.: "1 de 3 concluídos"). A barra à direita divide o lote em concluídos (verde), com falha (vermelho), terminados sem alteração (cinza: já existentes, cancelados ou revertidos) e o que ainda está em andamento, que brilha enquanto a implantação roda. Ao fim do lote, a barra fica cheia.
 
 Cada estado aparece com um ponto colorido: cinza para pendente, azul para em andamento, verde para concluído, amarelo para já existe ou cancelado, vermelho para erro e verde-água para revertido.
 
@@ -185,10 +185,10 @@ Cada estado aparece com um ponto colorido: cinza para pendente, azul para em and
 | Concluído | Fila instalada e pronta para uso. |
 | Já existe | A fila já existia; nada foi alterado. |
 | Driver ausente / Erro | Falha; o detalhe aparece na mensagem e no log. |
-| Removendo fila / Removendo porta / Revertido | Reversão em andamento ou concluída. |
+| Revertendo: fila / Revertendo: porta / Revertido | Reversão em andamento ou concluída. Se a porta não pôde ser verificada ou removida, a linha fica **Revertido** e o aviso aparece na mensagem. |
 | Cancelado | Interrompido pelo operador. |
 
-Ao final, a janela **Resumo do lote** mostra quantos concluíram, foram ignorados, falharam ou foram cancelados.
+Ao final, a janela **Resumo do lote** mostra quantos concluíram, foram ignorados, tiveram erro ou ficaram sem driver, e quantos foram revertidos ou interrompidos pelo cancelamento.
 
 ### 4.5 Cancelamento e reversão automática
 

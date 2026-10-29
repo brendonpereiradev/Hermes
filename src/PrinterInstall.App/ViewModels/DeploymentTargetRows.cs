@@ -10,35 +10,33 @@ namespace PrinterInstall.App.ViewModels;
 /// </summary>
 internal static class DeploymentTargetRows
 {
+    /// <summary>Etapa da implantação ainda em andamento. A reversão tem fechamento próprio.</summary>
     public static bool IsIntermediateState(TargetMachineState s) =>
-        s is TargetMachineState.Pending
-            or TargetMachineState.IdentifyingPrinter
-            or TargetMachineState.ValidatingPrinter
-            or TargetMachineState.ContactingRemote
-            or TargetMachineState.ValidatingDriver
-            or TargetMachineState.InstallingDriver
-            or TargetMachineState.DriverInstalledReconfirming
-            or TargetMachineState.Configuring;
+        TargetStateCategories.Of(s) == TargetStateCategory.InProgress
+        && s is not (TargetMachineState.RollbackRemovingQueue or TargetMachineState.RollbackRemovingPort);
 
     private static bool IsFailureState(TargetMachineState s) =>
-        s is TargetMachineState.Error
-            or TargetMachineState.AbortedDriverMissing
-            or TargetMachineState.PrinterIdentityMismatch
-            or TargetMachineState.PrinterIdentityUnknown;
+        TargetStateCategories.Of(s) == TargetStateCategory.Failed;
 
-    /// <summary>Linhas que terminaram com sucesso e com falha, para o resumo do painel de status.</summary>
-    public static (int Succeeded, int Failed) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
+    /// <summary>
+    /// Linhas que terminaram com sucesso, com falha ou sem nenhum dos dois ("Já existe", "Cancelado",
+    /// "Revertido"), para o resumo do painel de status. O resto ainda está em andamento.
+    /// </summary>
+    public static (int Succeeded, int Failed, int Neutral) CountOutcomes(IEnumerable<TargetRowViewModel> targets)
     {
         var succeeded = 0;
         var failed = 0;
+        var neutral = 0;
         foreach (var row in targets)
         {
-            if (row.State == TargetMachineState.CompletedSuccess)
-                succeeded++;
-            else if (IsFailureState(row.State))
-                failed++;
+            switch (TargetStateCategories.Of(row.State))
+            {
+                case TargetStateCategory.Succeeded: succeeded++; break;
+                case TargetStateCategory.Failed: failed++; break;
+                case TargetStateCategory.Skipped or TargetStateCategory.Cancelled: neutral++; break;
+            }
         }
-        return (succeeded, failed);
+        return (succeeded, failed, neutral);
     }
 
     /// <summary>Um evento sem fila se aplica a todas as linhas do computador.</summary>
@@ -103,7 +101,11 @@ internal static class DeploymentTargetRows
             case PrinterRemovalProgressState.RollbackSucceeded:
                 SetState(ResolveRollbackRow(targets, e), TargetMachineState.RolledBack, e.Message);
                 break;
+            // Os avisos da reversão são sobre a porta (não verificada ou não removida): a fila já saiu,
+            // então a linha está revertida e o aviso fica na mensagem, sem contar como falha.
             case PrinterRemovalProgressState.Warning:
+                SetState(ResolveRollbackRow(targets, e), TargetMachineState.RolledBack, e.Message);
+                break;
             case PrinterRemovalProgressState.Error:
                 SetState(ResolveRollbackRow(targets, e), TargetMachineState.Error, e.Message);
                 break;
@@ -118,36 +120,35 @@ internal static class DeploymentTargetRows
         var ok = 0;
         var skipped = 0;
         var err = 0;
-        var aborted = 0;
+        var driverMissing = 0;
         var rolledBack = 0;
         var deployCancelled = 0;
-        var other = 0;
+        var inProgress = 0;
         foreach (var t in targets)
         {
-            switch (t.State)
+            switch (TargetStateCategories.Of(t.State))
             {
-                case TargetMachineState.CompletedSuccess: ok++; break;
-                case TargetMachineState.SkippedAlreadyExists: skipped++; break;
-                case TargetMachineState.Error: err++; break;
-                case TargetMachineState.PrinterIdentityMismatch: err++; break;
-                case TargetMachineState.PrinterIdentityUnknown: err++; break;
-                case TargetMachineState.AbortedDriverMissing: aborted++; break;
-                case TargetMachineState.RolledBack: rolledBack++; break;
-                case TargetMachineState.DeployCancelled: deployCancelled++; break;
-                default: other++; break;
+                case TargetStateCategory.Succeeded: ok++; break;
+                case TargetStateCategory.Skipped: skipped++; break;
+                // "Driver ausente" tem contagem própria no resumo; as outras falhas somam como erro.
+                case TargetStateCategory.Failed when t.State == TargetMachineState.AbortedDriverMissing: driverMissing++; break;
+                case TargetStateCategory.Failed: err++; break;
+                case TargetStateCategory.Cancelled when t.State == TargetMachineState.RolledBack: rolledBack++; break;
+                case TargetStateCategory.Cancelled: deployCancelled++; break;
+                case TargetStateCategory.InProgress: inProgress++; break;
             }
         }
 
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, aborted));
-        if (other > 0)
-            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, other));
+        sb.AppendLine(string.Format(UiStrings.Main_SummaryLineFormat, ok, skipped, err, driverMissing));
+        if (inProgress > 0)
+            sb.AppendLine(string.Format(UiStrings.Main_SummaryOtherFormat, inProgress));
         if (rolledBack > 0)
             sb.AppendLine(string.Format(UiStrings.Main_SummaryRolledBackFormat, rolledBack));
         if (deployCancelled > 0)
             sb.AppendLine(string.Format(UiStrings.Main_SummaryDeployCancelledFormat, deployCancelled));
 
-        if (err > 0 || aborted > 0)
+        if (err > 0 || driverMissing > 0)
         {
             foreach (var t in targets.Where(x => IsFailureState(x.State)))
             {
@@ -164,9 +165,11 @@ internal static class DeploymentTargetRows
         if (targets.Count == 0)
             return OperationOutcome.None;
 
-        var successCount = targets.Count(t => t.State is TargetMachineState.CompletedSuccess or TargetMachineState.SkippedAlreadyExists);
-        var errorCount = targets.Count(t => IsFailureState(t.State));
-        var cancelCount = targets.Count(t => t.State is TargetMachineState.DeployCancelled or TargetMachineState.RolledBack);
+        // "Já existe" conta como sucesso aqui: a impressora está no computador, que é o que o técnico quer saber.
+        var categories = targets.Select(t => TargetStateCategories.Of(t.State)).ToList();
+        var successCount = categories.Count(c => c is TargetStateCategory.Succeeded or TargetStateCategory.Skipped);
+        var errorCount = categories.Count(c => c == TargetStateCategory.Failed);
+        var cancelCount = categories.Count(c => c == TargetStateCategory.Cancelled);
 
         if (cancelCount > 0)
             return OperationOutcome.Warning;

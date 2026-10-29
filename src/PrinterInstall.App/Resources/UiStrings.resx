@@ -12,7 +12,7 @@
   <data name="Main_InvalidComputerNameFormat" xml:space="preserve"><value>Nome inválido</value></data>
   <data name="Main_LocalComputerSuffix" xml:space="preserve"><value>(este PC)</value></data>
   <data name="Main_LocalOnlyRemoteBlocked" xml:space="preserve"><value>Modo local: só este computador pode receber impressoras</value></data>
-  <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} cancelado(s).</value></data>
+  <data name="Main_SummaryLineFormat" xml:space="preserve"><value>Resumo: {0} concluído(s), {1} ignorado(s), {2} erro(s), {3} driver(s) ausente(s).</value></data>
   <data name="Main_SummaryOtherFormat" xml:space="preserve"><value>Outros estados: {0}</value></data>
   <data name="Main_SummaryFailureLineFormat" xml:space="preserve"><value>{0} | {1} | {2}</value></data>
   <data name="Main_SummaryDialogTitle" xml:space="preserve"><value>Resumo do lote</value></data>

@@ -10,7 +10,7 @@ public class DeploymentTargetRowsTests
         new() { ComputerName = computer, PrinterQueueName = queue, ExpectedPortName = $"IP_{queue}", State = state };
 
     [Fact]
-    public void CountOutcomes_SeparatesSuccessFromFailuresAndIgnoresTheRest()
+    public void CountOutcomes_SeparatesSuccessFailuresAndNeutralRows()
     {
         var rows = new[]
         {
@@ -18,13 +18,17 @@ public class DeploymentTargetRowsTests
             Row("PC2", "A", TargetMachineState.Error),
             Row("PC3", "A", TargetMachineState.PrinterIdentityMismatch),
             Row("PC4", "A", TargetMachineState.Configuring),
-            Row("PC5", "A", TargetMachineState.SkippedAlreadyExists)
+            Row("PC5", "A", TargetMachineState.SkippedAlreadyExists),
+            Row("PC6", "A", TargetMachineState.DeployCancelled),
+            Row("PC7", "A", TargetMachineState.RolledBack),
+            Row("PC8", "A", TargetMachineState.RollbackRemovingQueue)
         };
 
-        var (succeeded, failed) = DeploymentTargetRows.CountOutcomes(rows);
+        var (succeeded, failed, neutral) = DeploymentTargetRows.CountOutcomes(rows);
 
         Assert.Equal(1, succeeded);
         Assert.Equal(2, failed);
+        Assert.Equal(3, neutral);
     }
 
     [Fact]
@@ -61,6 +65,33 @@ public class DeploymentTargetRowsTests
 
         Assert.Equal(TargetMachineState.Pending, rows[0].State);
         Assert.Equal(TargetMachineState.RolledBack, rows[1].State);
+    }
+
+    [Fact]
+    public void RollbackWarning_MarksRowRolledBackAndKeepsTheMessage()
+    {
+        var rows = new[] { Row("PC1", "A", TargetMachineState.RollbackRemovingPort) };
+
+        DeploymentTargetRows.ApplyRollbackProgress(rows,
+            new PrinterRemovalProgressEvent("PC1", PrinterRemovalProgressState.Warning, "porta não removida", PortName: "IP_A"),
+            new DeploymentRollbackJournal());
+
+        Assert.Equal(TargetMachineState.RolledBack, rows[0].State);
+        Assert.Equal("porta não removida", rows[0].Message);
+        Assert.Equal(0, DeploymentTargetRows.CountOutcomes(rows).Failed);
+    }
+
+    [Fact]
+    public void RollbackError_MarksRowAsError()
+    {
+        var rows = new[] { Row("PC1", "A", TargetMachineState.RollbackRemovingQueue) };
+
+        DeploymentTargetRows.ApplyRollbackProgress(rows,
+            new PrinterRemovalProgressEvent("PC1", PrinterRemovalProgressState.Error, "acesso negado", "A"),
+            new DeploymentRollbackJournal());
+
+        Assert.Equal(TargetMachineState.Error, rows[0].State);
+        Assert.Equal(1, DeploymentTargetRows.CountOutcomes(rows).Failed);
     }
 
     [Fact]
@@ -103,5 +134,38 @@ public class DeploymentTargetRowsTests
         Assert.Contains("PC2", summary);
         Assert.Contains("acesso negado", summary);
         Assert.Equal(string.Empty, DeploymentTargetRows.BuildSummaryText(Array.Empty<TargetRowViewModel>()));
+    }
+
+    [Fact]
+    public void BuildSummaryText_ReportsDriverMissingAsSuch()
+    {
+        // Antes, "Driver ausente" aparecia no resumo como "cancelado(s)".
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.AbortedDriverMissing),
+            Row("PC2", "A", TargetMachineState.Error)
+        };
+
+        var summary = DeploymentTargetRows.BuildSummaryText(rows);
+
+        Assert.Contains("1 erro(s), 1 driver(s) ausente(s)", summary);
+        Assert.DoesNotContain("cancelado", summary);
+    }
+
+    [Fact]
+    public void BuildSummaryText_SeparatesRolledBackFromCancelledAndInProgress()
+    {
+        var rows = new[]
+        {
+            Row("PC1", "A", TargetMachineState.RolledBack),
+            Row("PC2", "A", TargetMachineState.DeployCancelled),
+            Row("PC3", "A", TargetMachineState.Configuring)
+        };
+
+        var summary = DeploymentTargetRows.BuildSummaryText(rows);
+
+        Assert.Contains("Revertido(s) nesta execução: 1", summary);
+        Assert.Contains("após cancelamento (sem reversão ou antes da reversão): 1", summary);
+        Assert.Contains("Outros estados: 1", summary);
     }
 }

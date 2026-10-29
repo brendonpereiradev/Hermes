@@ -347,6 +347,7 @@
                                 <appControls:StatusProgressBar Grid.Column="2" Height="6" VerticalAlignment="Center"
                                                                SucceededCount="{Binding StatusSucceededCount}"
                                                                FailedCount="{Binding StatusFailedCount}"
+                                                               NeutralCount="{Binding StatusNeutralCount}"
                                                                TotalCount="{Binding StatusTargetCount}"
                                                                IsRunning="{Binding IsDeployRunning}"
                                                                Visibility="{Binding ShowStatusEmptyHint, Converter={StaticResource InverseBoolToVis}}"/>
