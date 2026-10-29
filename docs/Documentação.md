@@ -139,8 +139,10 @@ As configurações valem de imediato e ficam em `%LocalAppData%\PrinterInstall\s
 
 ### 4.1 Computadores alvo
 
-- Digite no campo **Computadores alvo** um nome de rede ou IP por linha. É possível colar uma lista inteira.
-- **Adicionar este PC** inclui a máquina local (marcada como "(este PC)").
+- Por padrão, o seletor fica em **Um computador**: digite o IP ou nome de rede de uma única máquina, como no campo IP da impressora.
+- Para vários computadores, escolha **Lista** e informe um nome ou IP por linha. Colar uma lista com mais de um nome no campo único passa para **Lista** automaticamente.
+- Cada modo guarda o próprio texto; a implantação usa o modo selecionado. Ao trocar de modo com o outro campo vazio, o computador já digitado é levado junto.
+- **Adicionar este PC** inclui a máquina local (marcada como "(este PC)"). Se o campo único já tiver outro computador, os dois vão para **Lista**.
 - Na sessão local (sem domínio), o campo já vem com este PC e fica travado; um nome remoto termina em erro sem ser contatado.
 - O contador ao lado do título mostra quantos computadores foram reconhecidos e quantos estão inválidos.
 
