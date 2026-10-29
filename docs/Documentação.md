@@ -171,11 +171,11 @@ As caixas de aviso e de resumo não têm barra de título: feche pelos botões d
 
 ### 4.4 Acompanhamento
 
-Os computadores são processados em paralelo. A tabela **Status** mostra, para cada computador e fila, o estado atual e uma mensagem. Uma falha em uma máquina não interrompe as demais.
+Os computadores são processados em paralelo. A tabela **Status** mostra, para cada computador e impressora, o estado atual. Embaixo do estado aparece um detalhe em cinza quando ele acrescenta algo: a etapa em andamento ("Criando porta…") ou o motivo de uma falha ("Impressora offline: não respondeu ao ping"). Uma falha em uma máquina não interrompe as demais.
 
 Ao lado do título **Status**, o resumo mostra quantas filas foram concluídas sobre o total (ex.: "1 de 3 concluídos"). A barra à direita divide o lote em concluídos (verde), com falha (vermelho), terminados sem alteração (cinza: já existentes, cancelados ou revertidos) e o que ainda está em andamento, que brilha enquanto a implantação roda. Ao fim do lote, a barra fica cheia.
 
-Cada estado aparece com um ponto colorido: cinza para pendente, azul para em andamento, verde para concluído, amarelo para já existe ou cancelado, vermelho para erro e verde-água para revertido.
+Cada estado aparece com um ponto colorido: cinza para pendente, azul para em andamento, verde para concluído, amarelo para concluído com aviso, já existe ou cancelado, vermelho para erro e verde-água para revertido.
 
 | Estado | Significado |
 |---|---|
@@ -185,12 +185,13 @@ Cada estado aparece com um ponto colorido: cinza para pendente, azul para em and
 | Validando / Instalando / Confirmando driver | Verificação e instalação do pacote de driver no Windows. |
 | Configurando | Criação da porta TCP/IP e da fila de impressão. |
 | Concluído | Fila instalada e pronta para uso. |
+| Concluído com aviso | Fila instalada, mas a página de teste falhou; o motivo aparece embaixo do estado. |
 | Já existe | A fila já existia; nada foi alterado. |
-| Driver ausente / Erro | Falha; o detalhe aparece na mensagem e no log. |
-| Revertendo: fila / Revertendo: porta / Revertido | Reversão em andamento ou concluída. Se a porta não pôde ser verificada ou removida, a linha fica **Revertido** e o aviso aparece na mensagem. |
+| Driver ausente / Erro | Falha; o motivo aparece embaixo do estado e no log. |
+| Revertendo: fila / Revertendo: porta / Revertido | Reversão em andamento ou concluída. Se a porta não pôde ser verificada ou removida, a linha fica **Revertido** e o aviso aparece embaixo do estado. |
 | Cancelado | Interrompido pelo operador. |
 
-Ao final, a janela **Resumo do lote** mostra quantos concluíram, foram ignorados, tiveram erro ou ficaram sem driver, e quantos foram revertidos ou interrompidos pelo cancelamento.
+Ao final, uma caixa de resumo responde logo no título se deu certo: **Instalação concluída** (ícone verde), **Instalação concluída com problemas** (âmbar), **A instalação falhou** (vermelho) ou **Instalação interrompida** (âmbar, após cancelamento). Abaixo, uma frase com as contagens que não são zero (ex.: "3 concluídos, 1 erro.") e uma linha por falha ou aviso, com computador, impressora e motivo.
 
 ### 4.5 Cancelamento e reversão automática
 
@@ -220,7 +221,7 @@ Em cada impressora, marque **Remover** para excluí-la ou digite um nome em **Re
 
 ### 5.3 Revisar o plano e executar
 
-A última etapa lista as remoções e renomeações por computador. Clique em **Executar alterações**. Filas removidas têm suas portas TCP/IP apagadas quando ficam sem uso; renomeações são aplicadas sem reinstalar o driver. O **Log de execução** registra cada operação e pode ser exportado. Ao terminar, uma caixa de resumo mostra o resultado: ícone azul quando tudo deu certo, âmbar quando houve falhas parciais e vermelho quando nenhuma alteração deu certo ou ocorreu um erro inesperado.
+A última etapa lista as remoções e renomeações por computador. Clique em **Executar alterações**. Filas removidas têm suas portas TCP/IP apagadas quando ficam sem uso; renomeações são aplicadas sem reinstalar o driver. O **Log de execução** registra cada operação e pode ser exportado. Ao terminar, uma caixa de resumo mostra o resultado: **Alterações concluídas** (ícone verde) quando tudo deu certo, **Alterações concluídas com problemas** (âmbar) quando houve avisos ou falhas parciais e **As alterações falharam** (vermelho) quando nenhuma alteração deu certo ou ocorreu um erro inesperado.
 
 ### 5.4 Reiniciar spooler
 
