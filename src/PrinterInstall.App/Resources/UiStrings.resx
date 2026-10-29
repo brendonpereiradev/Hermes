@@ -73,7 +73,7 @@
   <data name="NetworkTest_Progress_Identity" xml:space="preserve"><value>Identificando impressora e verificando compatibilidade…</value></data>
   <data name="NetworkTest_Cancelled" xml:space="preserve"><value>Teste cancelado.</value></data>
   <data name="Main_Validation_InvalidHostAddressFormat" xml:space="preserve"><value>O endereço de host '{0}' é inválido. Informe um endereço IP (ex: 192.0.2.218) ou nome de host de rede válido.</value></data>
-  <data name="Main_Validation_InversionDetectedFormat" xml:space="preserve"><value>Inversão detectada: o nome da impressora '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável. Corrija os campos antes de implantar.</value></data>
+  <data name="Main_Validation_InversionDetectedFormat" xml:space="preserve"><value>Inversão detectada: o nome da impressora '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável. Corrija os campos antes de instalar.</value></data>
   <data name="Log_ExportSuccessFormat" xml:space="preserve"><value>Log exportado com sucesso para: {0}</value></data>
   <data name="Log_ExportErrorFormat" xml:space="preserve"><value>Falha ao exportar log: {0}</value></data>
   <data name="Log_OpenFolderErrorFormat" xml:space="preserve"><value>Não foi possível abrir a pasta de logs: {0}</value></data>
@@ -83,10 +83,10 @@
   <data name="Removal_Cancelled" xml:space="preserve"><value>Operação cancelada pelo utilizador.</value></data>
   <data name="Main_DeployWarningDialogTitle" xml:space="preserve"><value>Atenção: possível divergência de modelo</value></data>
   <data name="Main_DeployWarningHeader" xml:space="preserve"><value>Foram identificadas possíveis divergências na configuração de modelos:</value></data>
-  <data name="Main_DeployWarningQuestion" xml:space="preserve"><value>Deseja continuar com a implantação mesmo assim?</value></data>
+  <data name="Main_DeployWarningQuestion" xml:space="preserve"><value>Deseja continuar com a instalação mesmo assim?</value></data>
   <data name="Main_DeployWarningProceedButton" xml:space="preserve"><value>Prosseguir mesmo assim</value></data>
   <data name="Main_DeployWarningCancelButton" xml:space="preserve"><value>Cancelar e corrigir</value></data>
-  <data name="Main_PrinterIdentityBlockTitle" xml:space="preserve"><value>Atenção: validação da impressora bloqueou a implantação</value></data>
+  <data name="Main_PrinterIdentityBlockTitle" xml:space="preserve"><value>Atenção: validação da impressora bloqueou a instalação</value></data>
   <data name="Main_PrinterIdentityBlockHeader" xml:space="preserve"><value>O modelo selecionado difere do modelo real da impressora:</value></data>
   <data name="Main_PrinterIdentityUnknownHeader" xml:space="preserve"><value>Não foi possível identificar com segurança o modelo real da impressora:</value></data>
   <data name="Main_PrinterIdentityBlockButton" xml:space="preserve"><value>Fechar e corrigir</value></data>
@@ -112,13 +112,13 @@
   <data name="Main_InversionDialogTitle" xml:space="preserve"><value>Atenção: inversão de campos detectada</value></data>
   <data name="Main_InversionDialogHeader" xml:space="preserve"><value>Possível inversão entre nome da impressora e IP/host</value></data>
   <data name="Main_InversionDialogItemFormat" xml:space="preserve"><value>O nome da impressora '{0}' parece ser um endereço IP, enquanto o host '{1}' parece ser um nome amigável.</value></data>
-  <data name="Main_InversionDialogQuestion" xml:space="preserve"><value>Deseja inverter automaticamente esses campos e prosseguir com a implantação?</value></data>
-  <data name="Main_InversionDialogProceedButton" xml:space="preserve"><value>Inverter e implantar</value></data>
+  <data name="Main_InversionDialogQuestion" xml:space="preserve"><value>Deseja inverter automaticamente esses campos e prosseguir com a instalação?</value></data>
+  <data name="Main_InversionDialogProceedButton" xml:space="preserve"><value>Inverter e instalar</value></data>
   <data name="Main_InversionDialogCancelButton" xml:space="preserve"><value>Cancelar e corrigir</value></data>
   <data name="Main_InversionCorrectedLogFormat" xml:space="preserve"><value>Inversão corrigida automaticamente: Nome definido como '{0}' e IP como '{1}'.</value></data>
   <data name="Main_DeployCancelledByInversionWarning" xml:space="preserve"><value>Implantação cancelada pelo operador para correção da inversão de campos.</value></data>
   <data name="Main_NoComputersDialogTitle" xml:space="preserve"><value>Atenção: nenhum computador alvo informado</value></data>
-  <data name="Main_NoComputersDialogHeader" xml:space="preserve"><value>Nenhum computador foi configurado para implantação</value></data>
-  <data name="Main_NoComputersDialogMessage" xml:space="preserve"><value>Informe pelo menos um nome ou endereço IP de computador na lista à esquerda antes de iniciar a implantação (ou clique em 'Adicionar este PC').</value></data>
+  <data name="Main_NoComputersDialogHeader" xml:space="preserve"><value>Nenhum computador foi configurado para instalação</value></data>
+  <data name="Main_NoComputersDialogMessage" xml:space="preserve"><value>Informe pelo menos um nome ou endereço IP de computador na lista à esquerda antes de iniciar a instalação (ou clique em 'Adicionar este PC').</value></data>
   <data name="Main_NoComputersDialogButton" xml:space="preserve"><value>Entendido / corrigir</value></data>
 </root>

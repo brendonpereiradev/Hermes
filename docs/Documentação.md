@@ -159,13 +159,13 @@ Use **Adicionar impressora** para criar mais filas na mesma execução e **Remov
 
 ### 4.3 Verificações antes de implantar
 
-Ao clicar em **Implantar**, o aplicativo valida os dados e pode exibir avisos:
+Ao clicar em **Instalar**, o aplicativo valida os dados e pode exibir avisos:
 
 | Aviso | Quando ocorre | O que fazer |
 |---|---|---|
-| Inversão de campos detectada | O nome parece um IP e o IP parece um nome. | **Inverter e implantar** corrige automaticamente; **Cancelar e corrigir** volta ao formulário. |
+| Inversão de campos detectada | O nome parece um IP e o IP parece um nome. | **Inverter e instalar** corrige automaticamente; **Cancelar e corrigir** volta ao formulário. |
 | Possível divergência de modelo | O nome da fila sugere outro tipo (ex.: ETIQ ou PULSEIRA com marca de folha comum). | Confira a marca. **Prosseguir mesmo assim** ou **Cancelar e corrigir**. |
-| Validação da impressora bloqueou a implantação | A impressora no IP informado é de outra marca/modelo, ou não pôde ser identificada com segurança. | Confira o IP e o modelo selecionado. Nenhuma alteração é feita nas estações. |
+| Validação da impressora bloqueou a instalação | A impressora no IP informado é de outra marca/modelo, ou não pôde ser identificada com segurança. | Confira o IP e o modelo selecionado. Nenhuma alteração é feita nas estações. |
 
 As caixas de aviso e de resumo não têm barra de título: feche pelos botões da própria caixa ou com **Esc**, e arraste pelo corpo da caixa para movê-la.
 
@@ -264,7 +264,7 @@ Epson, Lexmark e Brother imprimem uma folha (PCL) com data, hora e IP. A Gainsch
 
 1. Copie o executável para uma pasta local do computador e abra como administrador.
 2. Faça login, clique em **Adicionar este PC** e deixe apenas essa máquina na lista.
-3. Configure as impressoras, clique em **Implantar** e aguarde o resumo final, mesmo em caso de erro.
+3. Configure as impressoras, clique em **Instalar** e aguarde o resumo final, mesmo em caso de erro.
 4. Clique em **Exportar log** antes de fechar e envie o .txt ao suporte.
 
 ---
@@ -277,7 +277,7 @@ Estação desligada, sem rede, firewall bloqueando ou conta sem privilégio admi
 **A impressora não respondeu na porta 9100**  
 Impressora desligada, IP errado, cabo desconectado ou VLAN diferente. Valide com **Testar impressora** e verifique o LED de rede da impressora.
 
-**Validação da impressora bloqueou a implantação**  
+**Validação da impressora bloqueou a instalação**  
 O equipamento no IP é de outra marca/modelo ou não foi identificado. Confira o IP e o modelo selecionado.
 
 **Gainscha imprime uma etiqueta e pula outras em branco**  
