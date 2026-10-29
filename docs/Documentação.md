@@ -1,6 +1,6 @@
 # Hermes: documentação
 
-Guia de uso do Hermes (antigo PrinterInstall) 1.8.2 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
+Guia de uso do Hermes (antigo PrinterInstall) 1.9.0 para técnicos de suporte, helpdesk e analistas de campo. Os nomes, domínios e endereços usados como exemplo são fictícios.
 
 Na versão 1.6.0 o aplicativo passou a se chamar Hermes e ganhou um novo visual, alinhado aos projetos Talos e Hefesto. O executável agora é `Hermes.exe`; configurações e logs continuam na pasta `%LocalAppData%\PrinterInstall`, então quem já usava o aplicativo não perde nada.
 
@@ -211,7 +211,7 @@ Abra pelo botão **Controle de impressoras** no topo da janela principal. O assi
 
 O assistente percorre os computadores um a um ("Computador 1 de N"). Para cada um ele testa ping e as portas de gerenciamento e mostra **Online** ou **Offline**:
 
-- **Online**: a lista de impressoras é carregada com as colunas Remover, Impressora, Porta e Renomear para.
+- **Online**: a lista de impressoras é carregada com as colunas Remover, Impressora, Porta e Renomear para. Se a consulta falhar (por exemplo, senha recusada ou conta bloqueada), o motivo aparece abaixo do nome do computador; se o computador não tiver filas, o assistente avisa que nenhuma impressora foi encontrada.
 - **Offline**: a resposta chega em cerca de 2 segundos. Ligue o computador e clique em **Testar novamente**, ou avance sem alterá-lo.
 
 Em cada impressora, marque **Remover** para excluí-la ou digite um nome em **Renomear para**. Também é possível apenas consultar e avançar sem alterar nada.
